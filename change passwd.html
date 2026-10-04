@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Change Password - Pepsi VIP</title>
+  
+  <!-- Font Awesome for Navigation Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- Core App Scripts & Guards -->
+  <script src="config.js"></script>
+  <script src="auth-guard.js"></script>
+  <script src="toast.js"></script>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    body {
+      background-color: #ffffff;
+      color: #111827;
+      display: flex;
+      justify-content: center;
+      min-height: 100vh;
+      overflow-x: hidden;
+      padding-bottom: 75px;
+    }
+
+    .app-container {
+      width: 100vw;
+      max-width: 480px;
+      background-color: #ffffff;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      padding: 20px;
+    }
+
+    /* HEADER BAR */
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #f3f4f6;
+      margin-bottom: 24px;
+    }
+
+    .back-btn {
+      color: #111827;
+      text-decoration: none;
+      font-size: 1.2rem;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .header-title {
+      font-size: 1.05rem;
+      font-weight: 700;
+    }
+
+    /* FORM STYLES */
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #374151;
+      margin-bottom: 8px;
+    }
+
+    .form-control {
+      width: 100%;
+      padding: 12px 14px;
+      border: 1px solid #d1d5db;
+      border-radius: 8px;
+      font-size: 1rem;
+      background-color: #ffffff;
+      color: #111827;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .form-control:focus {
+      border-color: #111827;
+    }
+
+    /* SUBMIT BUTTON */
+    .submit-btn {
+      width: 100%;
+      padding: 14px;
+      background-color: #111827;
+      color: #ffffff;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+
+    .submit-btn:hover {
+      background-color: #1f2937;
+    }
+
+    .submit-btn:disabled {
+      background-color: #9ca3af;
+      cursor: not-allowed;
+    }
+
+    /* UNIFORM BOTTOM NAVIGATION BAR */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 100%;
+      max-width: 480px;
+      background: #ffffff;
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      padding: 8px 0 6px 0;
+      border-top: 1px solid #e2e8f0;
+      z-index: 1000;
+    }
+
+    .nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-decoration: none;
+      color: #64748b;
+      font-size: 11px;
+      flex: 1;
+    }
+
+    .nav-item i {
+      font-size: 18px;
+      margin-bottom: 3px;
+    }
+
+    .nav-item.active {
+      color: #f95722;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="app-container">
+
+    <!-- Header -->
+    <div class="header">
+      <a href="me.html" class="back-btn">❮</a>
+      <span class="header-title">Change Account Password</span>
+      <div style="width: 16px;"></div>
+    </div>
+
+    <!-- Password Form -->
+    <form id="changePasswordForm" onsubmit="handleChangePassword(event)">
+      
+      <div class="form-group">
+        <label class="form-label" for="oldPassword">Old Password</label>
+        <input type="password" id="oldPassword" class="form-control" placeholder="Enter old password" required />
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="newPassword">New Password</label>
+        <input type="password" id="newPassword" class="form-control" placeholder="Enter new password" required minlength="6" />
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="confirmPassword">Confirm New Password</label>
+        <input type="password" id="confirmPassword" class="form-control" placeholder="Re-enter new password" required minlength="6" />
+      </div>
+
+      <button type="submit" class="submit-btn" id="submitBtn">Update Password</button>
+    </form>
+
+    <!-- Bottom Navigation Bar -->
+    <div class="bottom-nav">
+      <a href="home.html" class="nav-item">
+        <i class="fa-solid fa-house"></i>
+        <span>Home</span>
+      </a>
+      <a href="invite.html" class="nav-item">
+        <i class="fa-solid fa-user-group"></i>
+        <span>Team</span>
+      </a>
+      <a href="device.html" class="nav-item">
+        <i class="fa-solid fa-headset"></i>
+        <span>Device</span>
+      </a>
+      <a href="profit.html" class="nav-item">
+        <i class="fa-solid fa-chart-column"></i>
+        <span>Profit</span>
+      </a>
+      <a href="me.html" class="nav-item active">
+        <i class="fa-solid fa-user"></i>
+        <span>My</span>
+      </a>
+    </div>
+
+  </div>
+
+  <script>
+    function getApiBaseUrl() {
+      if (typeof API_BASE_URL !== 'undefined' && API_BASE_URL) return API_BASE_URL;
+      if (window.location.origin && window.location.origin.startsWith('http')) {
+        return window.location.origin;
+      }
+      return 'pep-back-production.up.railway.app'; // Default fallback
+    }
+
+    function clearAuthAndRedirect() {
+      localStorage.removeItem('userToken');
+      localStorage.removeItem('token');
+      sessionStorage.clear();
+      window.location.href = 'welcome.html';
+    }
+
+    async function handleChangePassword(event) {
+      event.preventDefault();
+
+      const oldPassword = document.getElementById('oldPassword').value.trim();
+      const newPassword = document.getElementById('newPassword').value.trim();
+      const confirmNewPassword = document.getElementById('confirmPassword').value.trim();
+      const submitBtn = document.getElementById('submitBtn');
+
+      if (newPassword !== confirmNewPassword) {
+        if (typeof showToast === 'function') {
+          showToast('New password and confirmation password do not match.', 'error');
+        }
+        return;
+      }
+
+      const token = localStorage.getItem('userToken') || localStorage.getItem('token');
+      if (!token) {
+        clearAuthAndRedirect();
+        return;
+      }
+
+      submitBtn.disabled = true;
+      submitBtn.innerText = 'Updating...';
+
+      const baseUrl = getApiBaseUrl();
+
+      try {
+        const response = await fetch(`pep-back-production.up.railway.app/api/auth/change-password`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          // Updated payload body to securely include confirmNewPassword as required by server validations
+          body: JSON.stringify({ 
+            oldPassword, 
+            newPassword, 
+            confirmNewPassword 
+          })
+        });
+
+        // Handle expired or unauthorized sessions automatically
+        if (response.status === 401 || response.status === 403) {
+          clearAuthAndRedirect();
+          return;
+        }
+
+        const data = await response.json();
+
+        if (response.ok && data.success) {
+          if (typeof showToast === 'function') {
+            showToast('Password updated successfully!', 'success');
+          }
+          document.getElementById('changePasswordForm').reset();
+          setTimeout(() => {
+            window.location.href = 'me.html';
+          }, 1200);
+        } else {
+          if (typeof showToast === 'function') {
+            showToast(data.message || 'Failed to update password.', 'error');
+          }
+        }
+      } catch (err) {
+        console.error("Error communicating with authentication server:", err);
+        if (typeof showToast === 'function') {
+          showToast('Network error. Unable to reach server.', 'error');
+        }
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerText = 'Update Password';
+      }
+    }
+  </script>
+
+</body>
+</html>

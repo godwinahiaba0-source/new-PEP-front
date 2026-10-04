@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Pepsi VIP</title>
+  <script src="config.js"></script>
+  <script src="toast.js"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      try {
+        window.location.href = 'welcome.html';
+      } catch (error) {
+        if (typeof showToast === 'function') {
+          showToast('Failed to redirect. Please refresh the page.', 'error');
+        } else {
+          console.error('Redirect failed:', error);
+        }
+      }
+    });
+  </script>
+</head>
+<body>
+</body>
+</html>

@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>About Pepsi VIP – Ghana</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    body {
+      background-color: #f5f7fa;
+      color: #333333;
+      display: flex;
+      justify-content: center;
+      min-height: 100vh;
+    }
+
+    .app-container {
+      width: 100vw;
+      max-width: 480px;
+      background-color: #ffffff;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+
+    /* TOP HEADER BAR */
+    .header {
+      background-color: #2f855a;
+      color: #ffffff;
+      padding: 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .back-btn {
+      background: none;
+      border: none;
+      color: #ffffff;
+      font-size: 1.2rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .header-title {
+      font-size: 1.05rem;
+      font-weight: 700;
+      letter-spacing: 0.3px;
+    }
+
+    /* CONTENT BODY */
+    .content-body {
+      padding: 16px;
+      line-height: 1.6;
+      font-size: 0.88rem;
+      color: #4a5568;
+      overflow-y: auto;
+      padding-bottom: 30px;
+    }
+
+    .hero-banner {
+      background: linear-gradient(135deg, #2f855a, #22543d);
+      color: #ffffff;
+      padding: 22px 16px;
+      border-radius: 12px;
+      margin-bottom: 16px;
+      text-align: center;
+      box-shadow: 0 4px 6px rgba(47, 133, 90, 0.2);
+    }
+
+    .hero-banner h2 {
+      font-size: 1.25rem;
+      font-weight: 800;
+      margin-bottom: 6px;
+    }
+
+    .hero-banner p {
+      font-size: 0.82rem;
+      opacity: 0.95;
+      font-weight: 500;
+    }
+
+    .info-card {
+      background: #ffffff;
+      border: 1px solid #edf2f7;
+      border-radius: 10px;
+      padding: 16px;
+      margin-bottom: 14px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.03);
+    }
+
+    .info-card h3 {
+      color: #2d3748;
+      font-size: 0.98rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .info-card p {
+      color: #4a5568;
+      margin-bottom: 8px;
+    }
+
+    .info-card p:last-child {
+      margin-bottom: 0;
+    }
+
+    .values-tag-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .value-tag {
+      background-color: #f0fff4;
+      color: #276749;
+      border: 1px solid #c6f6d5;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 0.78rem;
+      font-weight: 600;
+    }
+
+    .footer-slogan {
+      text-align: center;
+      padding: 16px;
+      margin-top: 8px;
+      background-color: #f8fafc;
+      border-radius: 8px;
+      color: #2d3748;
+      font-weight: 700;
+      font-size: 0.88rem;
+      border: 1px dashed #cbd5e0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="app-container">
+    <!-- Top Header Bar -->
+    <div class="header">
+      <button class="back-btn" onclick="window.location.href='home.html'">&#10140;</button>
+      <span class="header-title">ABOUT PEP</span>
+    </div>
+
+    <!-- Page Content -->
+    <div class="content-body">
+      
+      <!-- Hero Banner -->
+      <div class="hero-banner">
+        <h2 id="intro-hero-title">🚀 Welcome to Pepsi VIP – Ghana</h2>
+        <p id="intro-hero-subtitle">Empowering Your Financial Journey • Unlocking Boundless Potential Together</p>
+      </div>
+
+      <!-- About Section -->
+      <div class="info-card">
+        <p id="intro-about-1"><strong>Pepsi VIP</strong> is a premier, cutting-edge digital investment ecosystem engineered to empower members with exclusive access to high-yield financial growth opportunities.</p>
+        <p id="intro-about-2">Drawing inspiration from world-class brand excellence and the vibrant pulse of Ghana's market, we transcend ordinary boundaries to build an elite digital community driven by smart participation and unstoppable momentum.</p>
+        <p id="intro-about-3">Our state-of-the-art platform seamlessly connects ambitious members through advanced technology, delivering an immersive space to monitor earnings, expand networks, and achieve financial independence.</p>
+      </div>
+
+      <!-- Mission Section -->
+      <div class="info-card">
+        <h3>🎯 Our Mission</h3>
+        <p id="intro-mission">To break financial barriers by creating accessible, high-performance wealth-building avenues while cultivating an unbreakable community rooted in collaboration, trust, and relentless progress.</p>
+      </div>
+
+      <!-- Vision Section -->
+      <div class="info-card">
+        <h3>👁️ Our Vision</h3>
+        <p id="intro-vision">To pioneer Ghana's most trusted and dynamic digital wealth network, inspiring a generation of forward-thinking individuals to turn financial aspirations into reality.</p>
+      </div>
+
+      <!-- Teamwork Section -->
+      <div class="info-card">
+        <h3>🤝 Stronger Together: The Power of Teamwork</h3>
+        <p id="intro-teamwork-1">True success is never a solo journey. At Pepsi VIP, we amplify your earning potential by fostering a culture of active collaboration, transparent communication, and mutual upliftment.</p>
+        <p id="intro-teamwork-2">Every single member is a valued pillar of our ecosystem. Through disciplined strategy, team synergy, and consistent execution, we pave the ultimate pathway to long-term prosperity.</p>
+      </div>
+
+      <!-- Core Values Section -->
+      <div class="info-card">
+        <h3>⭐ Our Core Values</h3>
+        <div class="values-tag-container" id="values-container">
+          <span class="value-tag">Uncompromising Integrity</span>
+          <span class="value-tag">Synergistic Teamwork</span>
+          <span class="value-tag">Limitless Opportunity</span>
+          <span class="value-tag">Continuous Innovation</span>
+          <span class="value-tag">Thriving Community</span>
+          <span class="value-tag">Exponential Growth</span>
+        </div>
+      </div>
+
+      <!-- Commitment Section -->
+      <div class="info-card">
+        <h3>🇬🇭 Our Commitment to Ghana</h3>
+        <p id="intro-commitment">We are deeply dedicated to transforming the digital financial landscape across Ghana, providing secure, reliable, and user-friendly pathways for anyone ready to take charge of their financial future.</p>
+      </div>
+
+      <!-- Footer Slogan -->
+      <div class="footer-slogan" id="intro-slogan">
+        Bold Vision. Elite Community. Infinite Future.
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Central Configuration and Toast Notification Scripts FIRST -->
+  <script src="config.js"></script>
+  <script src="toast.js"></script>
+
+  <script>
+    async function loadPlatformIntro() {
+      const token = localStorage.getItem('userToken');
+
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/platform/intro`, {
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': token ? `Bearer ${token}` : ''
+          }
+        });
+
+        if (!response.ok) return;
+
+        const data = await response.json();
+
+        if (data.heroTitle) document.getElementById('intro-hero-title').textContent = data.heroTitle;
+        if (data.heroSubtitle) document.getElementById('intro-hero-subtitle').textContent = data.heroSubtitle;
+        if (data.aboutText1) document.getElementById('intro-about-1').innerHTML = data.aboutText1;
+        if (data.aboutText2) document.getElementById('intro-about-2').textContent = data.aboutText2;
+        if (data.aboutText3) document.getElementById('intro-about-3').textContent = data.aboutText3;
+        if (data.mission) document.getElementById('intro-mission').textContent = data.mission;
+        if (data.vision) document.getElementById('intro-vision').textContent = data.vision;
+        if (data.teamworkText1) document.getElementById('intro-teamwork-1').textContent = data.teamworkText1;
+        if (data.teamworkText2) document.getElementById('intro-teamwork-2').textContent = data.teamworkText2;
+        if (data.commitment) document.getElementById('intro-commitment').textContent = data.commitment;
+        if (data.slogan) document.getElementById('intro-slogan').textContent = data.slogan;
+
+        if (Array.isArray(data.coreValues) && data.coreValues.length > 0) {
+          const container = document.getElementById('values-container');
+          container.innerHTML = '';
+          data.coreValues.forEach(val => {
+            const tag = document.createElement('span');
+            tag.className = 'value-tag';
+            tag.textContent = val;
+            container.appendChild(tag);
+          });
+        }
+      } catch (err) {
+        console.warn("Backend intro endpoint offline, showing default text.", err);
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', loadPlatformIntro);
+  </script>
+</body>
+</html>

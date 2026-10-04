@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>YF Life Fund</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    body {
+      background-color: #f7f9fa;
+      display: flex;
+      justify-content: center;
+      min-height: 100vh;
+      color: #333;
+    }
+
+    .app-container {
+      width: 100%;
+      max-width: 480px;
+      background-color: #f7f9fa;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      padding-bottom: 40px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.05);
+      overflow-x: hidden;
+    }
+
+    /* Sticky Header */
+    .header {
+      background: #ffffff;
+      height: 50px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 16px;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      border-bottom: 1px solid #f0f0f0;
+    }
+
+    .back-btn {
+      font-size: 1.1rem;
+      color: #999999;
+      cursor: pointer;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .header-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: #333333;
+    }
+
+    .records-top-btn {
+      background: none;
+      border: none;
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: #00bcd4;
+      cursor: pointer;
+    }
+
+    /* Top Banner Container */
+    .header-banner-wrapper {
+      position: relative;
+      width: 100%;
+      background-color: #fcebd2;
+    }
+
+    .header-banner {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    /* Header Metrics Card Over/On Top */
+    .header-metrics-card {
+      background: #ffffff;
+      border-radius: 12px;
+      margin: 12px 16px 0 16px;
+      padding: 14px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+      border: 1px solid #f0f0f0;
+    }
+
+    .metric-group {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .metric-label {
+      font-size: 0.75rem;
+      color: #888888;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+
+    .metric-value {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #333333;
+    }
+
+    .metric-value.highlight {
+      color: #f1b346;
+    }
+
+    .main-wrapper {
+      padding: 12px 0;
+    }
+
+    /* Storage Card Container */
+    .content-card {
+      background-color: #ffffff;
+      border-radius: 16px;
+      margin: 0 16px 12px 16px;
+      padding: 16px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+    }
+
+    .card-title {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: #555555;
+      margin-bottom: 12px;
+    }
+
+    #plansList {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .plan-box {
+      border: 1px solid #e2e2e2;
+      border-radius: 12px;
+      padding: 12px 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background-color: #ffffff;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .plan-box.active {
+      border-color: #00bcd4;
+      background-color: #f4fbfb;
+    }
+
+    .plan-box.active .plan-duration,
+    .plan-box.active .plan-profit,
+    .plan-box.active .plan-center,
+    .plan-box.active .surplus-title {
+      color: #00bcd4;
+    }
+
+    .plan-info {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .plan-duration {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: #333333;
+    }
+
+    .plan-profit {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #666666;
+    }
+
+    .plan-center {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #666666;
+    }
+
+    .surplus-wrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .surplus-title {
+      font-size: 0.75rem;
+      color: #888888;
+      margin-bottom: 3px;
+      font-weight: 600;
+    }
+
+    .progress-circle {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+
+    .progress-circle-inner {
+      width: 32px;
+      height: 32px;
+      background-color: #ffffff;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: #333333;
+    }
+
+    /* Deposit Card with Input Field inside */
+    .deposit-card {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 14px 16px;
+      background-color: #ffffff;
+      border-radius: 12px;
+      margin: 0 16px 4px 16px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+    }
+
+    .deposit-label {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: #333333;
+      line-height: 1.2;
+    }
+
+    .deposit-input-wrapper {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .deposit-input {
+      font-size: 1rem;
+      font-weight: 700;
+      color: #f1b346;
+      border: none;
+      outline: none;
+      background: transparent;
+      text-align: right;
+      width: 90px;
+    }
+
+    /* Hide number input arrows */
+    .deposit-input::-webkit-outer-spin-button,
+    .deposit-input::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+
+    .currency-suffix {
+      font-size: 1rem;
+      font-weight: 700;
+      color: #f1b346;
+    }
+
+    .revenue-text {
+      text-align: right;
+      font-size: 0.8rem;
+      color: #888888;
+      margin: 0 20px 16px 16px;
+      font-weight: 600;
+    }
+
+    .submit-button {
+      width: calc(100% - 32px);
+      margin: 0 16px;
+      padding: 14px;
+      background-color: #00bcd4;
+      color: #ffffff;
+      border: none;
+      border-radius: 25px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: 0 3px 8px rgba(0, 188, 212, 0.3);
+    }
+
+    /* Modal Overlay for Records */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      display: none;
+      justify-content: center;
+      align-items: flex-end;
+      z-index: 2000;
+    }
+
+    .modal-overlay.active {
+      display: flex;
+    }
+
+    .modal-content {
+      background: #ffffff;
+      width: 100%;
+      max-width: 480px;
+      border-top-left-radius: 20px;
+      border-top-right-radius: 20px;
+      padding: 20px;
+      max-height: 80vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+
+    .modal-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #0f172a;
+    }
+
+    .modal-close {
+      background: none;
+      border: none;
+      font-size: 20px;
+      color: #94a3b8;
+      cursor: pointer;
+    }
+
+    .records-list {
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 15px;
+      max-height: 300px;
+    }
+
+    .record-item-card {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.85rem;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="app-container">
+    <!-- Sticky Header -->
+    <div class="header">
+      <a href="me.html" class="back-btn"><i class="fa-solid fa-chevron-left"></i> Back</a>
+      <span class="header-title">YF Life Fund</span>
+      <button class="records-top-btn" onclick="openRecordsModal()">Records</button>
+    </div>
+
+    <!-- Top Header Banner -->
+    <div class="header-banner-wrapper">
+      <img src="yf.jpg" alt="YF Banner" class="header-banner">
+    </div>
+
+    <!-- Amount & Today's Earnings Section on Top -->
+    <div class="header-metrics-card">
+      <div class="metric-group">
+        <span class="metric-label">Amount</span>
+        <span id="active-invested" class="metric-value highlight">0.00</span>
+      </div>
+      <div class="metric-group" style="text-align: right;">
+        <span class="metric-label">Today's earnings</span>
+        <span id="todays-earnings" class="metric-value highlight">0.00</span>
+      </div>
+    </div>
+
+    <!-- Main Content Area -->
+    <div class="main-wrapper">
+      <!-- Storage Plans -->
+      <div class="content-card">
+        <div class="card-title">Storage period</div>
+        <div id="plansList"></div>
+      </div>
+
+      <!-- Deposit Card with Input Field -->
+      <div class="deposit-card" onclick="document.getElementById('inputAmount').focus()">
+        <div class="deposit-label">Deposit amount (Min: 100)</div>
+        <div class="deposit-input-wrapper">
+          <input type="number" id="inputAmount" class="deposit-input" placeholder="0.00" min="100" oninput="updateCalculations()">
+          <span class="currency-suffix">GHS</span>
+        </div>
+      </div>
+
+      <div class="revenue-text" id="revenueDisplay">revenue: 0.00 GHS</div>
+
+      <!-- Action Button -->
+      <button class="submit-button" onclick="handleSubmit()">Submit Investment</button>
+    </div>
+
+    <!-- Purchased Plan Records Modal -->
+    <div class="modal-overlay" id="recordsModal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <span class="modal-title">Purchased Plan Records</span>
+          <button class="modal-close" onclick="closeRecordsModal()">&times;</button>
+        </div>
+        <div class="records-list" id="purchasedRecordsContainer">
+          <div style="text-align: center; color: #64748b; padding: 20px;">Loading records...</div>
+        </div>
+        <button class="submit-button" onclick="closeRecordsModal()" style="margin: 0; width: 100%;">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="config.js"></script>
+  <script src="auth-guard.js"></script>
+  <script src="toast.js"></script>
+
+  <script>
+    const currency = 'GHS';
+    let selectedPlan = null;
+
+    const plansData = [
+      { id: 1, days: 220, profitPercent: 2000, surplus: 35 },
+      { id: 2, days: 300, profitPercent: 3200, surplus: 12 },
+      { id: 3, days: 3, profitPercent: 2, surplus: 36, default: true }
+    ];
+
+    const amountInput = document.getElementById('inputAmount');
+    const revenueDisplay = document.getElementById('revenueDisplay');
+    const plansListContainer = document.getElementById('plansList');
+
+    function resolveBaseUrl() {
+      if (typeof API_BASE_URL !== 'undefined' && API_BASE_URL) {
+        return API_BASE_URL;
+      }
+      const hostname = window.location.hostname;
+      if (hostname === 'localhost' || hostname === '127.0.0.1') {
+        return 'http://localhost:8080';
+      }
+      return 'pep-back-production.up.railway.app';
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const token = localStorage.getItem('userToken') || localStorage.getItem('token');
+      if (!token) {
+        window.location.href = 'welcome.html';
+        return;
+      }
+      renderPlans();
+      loadFundSummary();
+    });
+
+    async function loadFundSummary() {
+      const token = localStorage.getItem('userToken') || localStorage.getItem('token');
+      const baseUrl = resolveBaseUrl();
+      try {
+        const response = await fetch(`${baseUrl}/api/fund/summary`, {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+        const result = await response.json();
+        if (result.success && result.summary) {
+          const { activeInvested, todaysEarnings } = result.summary;
+          document.getElementById('active-invested').textContent = parseFloat(activeInvested || 0).toFixed(2);
+          document.getElementById('todays-earnings').textContent = parseFloat(todaysEarnings || 0).toFixed(2);
+        }
+      } catch (error) {
+        console.error('Error loading fund summary metrics:', error);
+      }
+    }
+
+    function renderPlans() {
+      plansListContainer.innerHTML = '';
+
+      plansData.forEach(plan => {
+        if (plan.default && !selectedPlan) {
+          selectedPlan = plan;
+        }
+
+        const isActive = selectedPlan && selectedPlan.id === plan.id;
+        const activeClass = isActive ? 'active' : '';
+        const circleStyle = `background: conic-gradient(#00bcd4 0% ${plan.surplus}%, #e2e2e2 ${plan.surplus}% 100%);`;
+
+        const planHTML = `
+          <div class="plan-box ${activeClass}" onclick="selectPlan(${plan.id})">
+            <div class="plan-info">
+              <span class="plan-duration">${plan.days} day</span>
+              <span class="plan-profit">Profit ${plan.profitPercent}%</span>
+            </div>
+            <div class="plan-center">${plan.days} day</div>
+            <div class="surplus-wrapper">
+              <span class="surplus-title">surplus</span>
+              <div class="progress-circle" style="${circleStyle}">
+                <div class="progress-circle-inner">${plan.surplus}%</div>
+              </div>
+            </div>
+          </div>
+        `;
+        plansListContainer.innerHTML += planHTML;
+      });
+
+      updateCalculations();
+    }
+
+    function selectPlan(planId) {
+      selectedPlan = plansData.find(p => p.id === planId);
+      renderPlans();
+    }
+
+    function updateCalculations() {
+      let amount = parseFloat(amountInput.value) || 0;
+
+      if (selectedPlan && amount > 0) {
+        const profitMultiplier = selectedPlan.profitPercent / 100;
+        const totalRevenue = amount + (amount * profitMultiplier);
+        revenueDisplay.textContent = `revenue: ${totalRevenue.toFixed(2)} ${currency}`;
+      } else {
+        revenueDisplay.textContent = `revenue: 0.00 ${currency}`;
+      }
+    }
+
+    async function openRecordsModal() {
+      document.getElementById('recordsModal').classList.add('active');
+      const container = document.getElementById('purchasedRecordsContainer');
+      container.innerHTML = '<div style="text-align: center; color: #64748b; padding: 20px;">Loading records...</div>';
+
+      const token = localStorage.getItem('userToken') || localStorage.getItem('token');
+      const baseUrl = resolveBaseUrl();
+
+      try {
+        const response = await fetch(`pep-back-production.up.railway.app/api/fund/records`, {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+        const result = await response.json();
+
+        if (result.success && result.records && result.records.length > 0) {
+          container.innerHTML = result.records.map(r => {
+            const purchaseDate = r.timestamp ? new Date(r.timestamp).toISOString().split('T')[0] : 'N/A';
+            return `
+              <div class="record-item-card">
+                <div>
+                  <strong>${r.days} Days Plan</strong><br>
+                  <small style="color: #64748b;">Invested: ${parseFloat(r.amount).toFixed(2)} ${currency}</small><br>
+                  <small style="color: #94a3b8; font-size: 11px;">${purchaseDate}</small>
+                </div>
+                <div style="text-align: right;">
+                  <span style="color: #00bcd4; font-weight: 700;">+${parseFloat(r.expectedProfit || 0).toFixed(2)} ${currency}</span><br>
+                  <small style="color: #f1b346; font-weight: 500; text-transform: capitalize;">${r.status || 'Active'}</small>
+                </div>
+              </div>
+            `;
+          }).join('');
+        } else {
+          container.innerHTML = '<div style="text-align: center; color: #64748b; padding: 20px;">No purchased plans found.</div>';
+        }
+      } catch (err) {
+        console.error('Error fetching records:', err);
+        container.innerHTML = '<div style="text-align: center; color: #ef4444; padding: 20px;">Failed to load records.</div>';
+      }
+    }
+
+    function closeRecordsModal() {
+      document.getElementById('recordsModal').classList.remove('active');
+    }
+
+    async function handleSubmit() {
+      const amount = parseFloat(amountInput.value);
+      const minLimit = 100.00;
+
+      if (!amount || amount < minLimit) {
+        if (typeof showToast === 'function') {
+          showToast(`Minimum investment amount is GHS ${minLimit.toFixed(2)}`, 'error');
+        } else {
+          alert(`Minimum investment amount is GHS ${minLimit.toFixed(2)}`);
+        }
+        return;
+      }
+
+      if (!selectedPlan) {
+        if (typeof showToast === 'function') showToast('Please select a storage plan', 'error');
+        return;
+      }
+
+      const token = localStorage.getItem('userToken') || localStorage.getItem('token');
+      const baseUrl = resolveBaseUrl();
+      const expectedProfit = amount * (selectedPlan.profitPercent / 100);
+
+      try {
+        const response = await fetch(`pep-back-production.up.railway.app/api/fund/invest`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            depositAmount: amount,
+            days: selectedPlan.days,
+            profitPercent: selectedPlan.profitPercent,
+            expectedProfit: expectedProfit
+          })
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+          if (typeof showToast === 'function') showToast(result.message, 'success');
+          amountInput.value = '';
+          updateCalculations();
+          loadFundSummary();
+        } else {
+          if (typeof showToast === 'function') showToast(result.message || 'Investment failed', 'error');
+        }
+      } catch (error) {
+        console.error('Investment submission error:', error);
+        if (typeof showToast === 'function') showToast('Server error processing investment', 'error');
+      }
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,764 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pepsi VIP - Home</title>
+
+  <link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0047ab">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="apple-touch-icon" href="pepsi-logo.png">
+
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('sw.js')
+        .then(reg => console.log('Service Worker registered!'))
+        .catch(err => console.log('Service Worker registration failed', err));
+    });
+  }
+</script>
+
+  <!-- Font Awesome for Bottom Nav Icons & Speaker Icon -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    body {
+      background-color: #f5f7fa;
+      color: #333333;
+      display: flex;
+      justify-content: center;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    .app-container {
+      width: 100vw;
+      max-width: 480px;
+      background-color: #ffffff;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      padding-bottom: 75px;
+    }
+
+    /* FULL BLEED HERO BANNER SLIDER */
+    .banner-wrapper {
+      padding: 0;
+      width: 100%;
+    }
+
+    .top-banner {
+      width: 100%;
+      height: 170px;
+      position: relative;
+      overflow: hidden;
+      border-radius: 0;
+      background: #033c7a;
+      border: none;
+      box-shadow: none;
+    }
+
+    .banner-slide {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      transition: opacity 0.5s ease-in-out;
+    }
+
+    .fade-in { opacity: 1; }
+    .fade-out { opacity: 0.15; }
+
+    /* MARQUEE NOTIFICATION WITH FIXED SPEAKER ICON */
+    .notice-bar {
+      background-color: #fff5f5;
+      color: #e53e3e;
+      font-size: 0.72rem;
+      padding: 6px 12px;
+      white-space: nowrap;
+      overflow: hidden;
+      border-bottom: 1px solid #fed7d7;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .notice-speaker-icon {
+      color: #e53e3e;
+      font-size: 0.85rem;
+      flex-shrink: 0;
+      display: inline-flex;
+      align-items: center;
+      z-index: 2;
+    }
+
+    .notice-marquee-wrapper {
+      overflow: hidden;
+      width: 100%;
+      position: relative;
+    }
+
+    .notice-content {
+      display: inline-block;
+      animation: marquee 18s linear infinite;
+    }
+
+    @keyframes marquee {
+      0% { transform: translateX(100%); }
+      100% { transform: translateX(-100%); }
+    }
+
+    /* 4 GRID BUTTONS */
+    .action-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      padding: 12px;
+    }
+
+    .grid-btn {
+      height: 48px;
+      border-radius: 8px;
+      border: none;
+      color: #ffffff;
+      font-weight: 700;
+      font-size: 0.88rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 3px 6px rgba(0,0,0,0.12);
+      text-decoration: none;
+      transition: transform 0.15s, opacity 0.15s;
+    }
+
+    .grid-btn:active {
+      transform: scale(0.97);
+      opacity: 0.9;
+    }
+
+    .btn-recharge { background: linear-gradient(90deg, #ff9800, #f57c00); }
+    .btn-withdraw { background: linear-gradient(90deg, #2196f3, #1976d2); }
+    .btn-device { background: linear-gradient(90deg, #ff7043, #f4511e); }
+    .btn-fund { background: linear-gradient(90deg, #66bb6a, #43a047); }
+
+    /* PROMO BANNERS SECTION */
+    .promo-section {
+      padding: 0 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .pill-banner {
+      display: flex;
+      width: 100%;
+      height: 68px;
+      border-radius: 34px;
+      padding: 8px 16px;
+      align-items: center;
+      justify-content: flex-start;
+      gap: 14px;
+      color: #ffffff;
+      text-decoration: none;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      box-sizing: border-box;
+      position: relative;
+      overflow: hidden;
+      transition: transform 0.15s ease;
+    }
+
+    .pill-banner:active {
+      transform: scale(0.98);
+    }
+
+    .banner-intro { background: linear-gradient(90deg, #2563eb, #1d4ed8, #1e3a8a); }
+    .banner-invite { background: linear-gradient(90deg, #6366f1, #4f46e5, #3730a3); }
+
+    .banner-icon {
+      width: 44px;
+      height: 44px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      z-index: 2;
+    }
+
+    .banner-content {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 4px;
+      position: relative;
+      z-index: 2;
+    }
+
+    .banner-title {
+      font-size: 0.95rem;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      color: #ffffff;
+    }
+
+    .learn-btn {
+      background: linear-gradient(90deg, #ff7e5f, #feb47b);
+      color: #ffffff;
+      padding: 3px 14px;
+      border-radius: 14px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      display: inline-block;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+
+    .banner-subtext {
+      font-size: 0.68rem;
+      opacity: 0.95;
+      font-weight: 500;
+    }
+
+    .confetti-wrapper {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .confetti-dot {
+      position: absolute;
+      border-radius: 50%;
+      opacity: 0.8;
+      animation: floatDot 3s ease-in-out infinite alternate;
+    }
+
+    @keyframes floatDot {
+      0% { transform: translateY(0px) scale(1); }
+      100% { transform: translateY(-6px) scale(1.2); }
+    }
+
+    /* VERTICAL LIVE SCROLLING MEMBERSHIP LIST */
+    .membership-container {
+      padding: 0 12px 16px 12px;
+    }
+
+    .membership-title {
+      font-size: 1rem;
+      font-weight: 800;
+      color: #2d3748;
+      margin-bottom: 10px;
+    }
+
+    .scroll-list-viewport {
+      height: 220px;
+      overflow: hidden;
+      position: relative;
+      background-color: #ffffff;
+      border-radius: 12px;
+      border: 1px solid #edf2f7;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    }
+
+    .scroll-list-track {
+      display: flex;
+      flex-direction: column;
+      animation: scrollUp 15s linear infinite;
+    }
+
+    .scroll-list-viewport:hover .scroll-list-track {
+      animation-play-state: paused;
+    }
+
+    @keyframes scrollUp {
+      0% { transform: translateY(0); }
+      100% { transform: translateY(-50%); }
+    }
+
+    .member-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 14px;
+      border-bottom: 1px solid #f7fafc;
+      height: 52px;
+      box-sizing: border-box;
+    }
+
+    .member-user-info {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .member-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      object-fit: cover;
+      background-color: #e2e8f0;
+      border: 1px solid #e2e8f0;
+    }
+
+    .member-text {
+      font-size: 0.78rem;
+      color: #4a5568;
+      font-weight: 600;
+    }
+
+    .member-amount {
+      font-size: 0.82rem;
+      font-weight: 800;
+      color: #00bcd4;
+    }
+
+    /* UNIFORM BOTTOM NAVIGATION BAR */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 100%;
+      max-width: 480px;
+      background: #ffffff;
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      padding: 8px 0 6px 0;
+      border-top: 1px solid #e2e8f0;
+      z-index: 1000;
+    }
+
+    .nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-decoration: none;
+      color: #718096;
+      font-size: 11px;
+      flex: 1;
+    }
+
+    .nav-item i {
+      font-size: 18px;
+      margin-bottom: 3px;
+    }
+
+    .nav-item.active {
+      color: #df7378;
+    }
+
+    /* MODAL POPUP */
+    .notice-modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0, 0, 0, 0.65);
+      backdrop-filter: blur(2px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      padding: 20px;
+    }
+
+    .notice-modal-card {
+      width: 100%;
+      max-width: 360px;
+      background: linear-gradient(135deg, #4b1248 0%, #0f1c3f 50%, #1e3a8a 100%);
+      border-radius: 16px;
+      padding: 16px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+    }
+
+    .notice-modal-inner {
+      background: rgba(12, 10, 24, 0.75);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 12px;
+      padding: 16px 14px;
+      color: #e2e8f0;
+      font-size: 0.8rem;
+      line-height: 1.45;
+      text-align: left;
+      margin-bottom: 24px;
+      width: 100%;
+    }
+
+    .notice-modal-inner p {
+      margin-bottom: 10px;
+      white-space: pre-line;
+    }
+
+    .notice-modal-close-btn {
+      position: absolute;
+      bottom: -60px;
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.9);
+      color: #1a202c;
+      border: none;
+      font-size: 1.2rem;
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+      transition: transform 0.15s ease;
+    }
+
+    .notice-modal-close-btn:active {
+      transform: scale(0.9);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="app-container">
+
+    <!-- Top Banner Image Slider Container -->
+    <div class="banner-wrapper">
+      <div class="top-banner">
+        <img id="bannerImage" src="banner123.jpg" alt="Hero Banner" class="banner-slide fade-in">
+      </div>
+    </div>
+
+    <!-- Marquee Notification Bar with Unmovable Red Speaker Icon -->
+    <div class="notice-bar">
+      <i class="fa-solid fa-bullhorn notice-speaker-icon"></i>
+      <div class="notice-marquee-wrapper">
+        <div class="notice-content" id="noticeMarquee">
+           Congratulations to ****1357 for recommending a subordinate to become VIP2 and get 20.00GHS commission!
+        </div>
+      </div>
+    </div>
+
+    <!-- 4 Action Grid Buttons -->
+    <div class="action-grid">
+      <a href="recharge.html" class="grid-btn btn-recharge">Recharge</a>
+      <a href="withdraw.html" class="grid-btn btn-withdraw">Withdrawal</a>
+      <a href="device.html" class="grid-btn btn-device">Device</a>
+      <a href="yf-life fund.html" class="grid-btn btn-fund">YF Life fund</a>
+    </div>
+
+    <!-- Promo Section -->
+    <div class="promo-section">
+      <a href="platform-intro.html" class="pill-banner banner-intro">
+        <div class="banner-icon">
+          <svg width="38" height="38" viewBox="0 0 64 64" fill="none">
+            <path d="M12 44L32 54L52 44L32 34L12 44Z" fill="#ffffff" opacity="0.3"/>
+            <path d="M12 34L32 44L52 34L32 24L12 34Z" fill="#ffffff" opacity="0.6"/>
+            <path d="M12 24L32 34L52 24L32 14L12 24Z" fill="#ffffff"/>
+          </svg>
+        </div>
+        <div class="banner-content">
+          <span class="banner-title">Platform Introduction</span>
+          <span class="learn-btn">learn more ➔</span>
+        </div>
+      </a>
+
+      <a href="invite.html" class="pill-banner banner-invite">
+        <div class="confetti-wrapper">
+          <div class="confetti-dot" style="top:12px; left:15%; width:6px; height:6px; background:#ff4081;"></div>
+          <div class="confetti-dot" style="top:42px; left:25%; width:5px; height:5px; background:#ffd700; animation-delay:0.5s;"></div>
+          <div class="confetti-dot" style="top:18px; right:20%; width:7px; height:7px; background:#00e676; animation-delay:0.2s;"></div>
+          <div class="confetti-dot" style="top:46px; right:12%; width:5px; height:5px; background:#ff9100; animation-delay:0.7s;"></div>
+        </div>
+
+        <div class="banner-icon">
+          <svg width="40" height="40" viewBox="0 0 64 64" fill="none">
+            <rect x="12" y="24" width="40" height="28" rx="6" fill="#ffd700"/>
+            <rect x="12" y="20" width="40" height="8" rx="3" fill="#ffae00"/>
+            <circle cx="32" cy="38" r="4" fill="#ffffff"/>
+            <circle cx="8" cy="18" r="3" fill="#ff4081"/>
+            <path d="M8 21v8M5 24l3-3 3 3" stroke="#ff4081" stroke-width="2" stroke-linecap="round"/>
+            <circle cx="56" cy="18" r="3" fill="#00e676"/>
+            <path d="M56 21v8M53 24l3-3 3 3" stroke="#00e676" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+        </div>
+
+        <div class="banner-content">
+          <span class="banner-title">INVITE TO JOIN</span>
+          <span class="banner-subtext">Commission refund of administrative fee</span>
+        </div>
+      </a>
+    </div>
+
+    <!-- Live Vertically Scrolling Membership List -->
+    <div class="membership-container">
+      <h3 class="membership-title">Membership list</h3>
+      
+      <div class="scroll-list-viewport">
+        <div class="scroll-list-track" id="membershipListTrack">
+          <div class="member-item">
+            <div class="member-user-info">
+              <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100&q=80" class="member-avatar" alt="user">
+              <span class="member-text">Congratulations ****7376</span>
+            </div>
+            <span class="member-amount">124.8GHS</span>
+          </div>
+
+          <div class="member-item">
+            <div class="member-user-info">
+              <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=100&q=80" class="member-avatar" alt="user">
+              <span class="member-text">Congratulations ****1357</span>
+            </div>
+            <span class="member-amount">908.88GHS</span>
+          </div>
+
+          <div class="member-item">
+            <div class="member-user-info">
+              <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=100&q=80" class="member-avatar" alt="user">
+              <span class="member-text">Congratulations ****2825</span>
+            </div>
+            <span class="member-amount">6.24GHS</span>
+          </div>
+
+          <div class="member-item">
+            <div class="member-user-info">
+              <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=100&q=80" class="member-avatar" alt="user">
+              <span class="member-text">Congratulations ****1357</span>
+            </div>
+            <span class="member-amount">908.88GHS</span>
+          </div>
+
+
+          <div class="member-item">
+            <div class="member-user-info">
+              <img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=100&q=80" class="member-avatar" alt="user">
+              <span class="member-text">Congratulations ****9800</span>
+            </div>
+            <span class="member-amount">11.04GHS</span>
+          </div>
+
+          <div class="member-item">
+            <div class="member-user-info">
+              <img src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&w=100&q=80" class="member-avatar" alt="user">
+              <span class="member-text">Congratulations ****1141</span>
+            </div>
+            <span class="member-amount">68.16GHS</span>
+          </div>
+
+          <div class="member-item">
+            <div class="member-user-info">
+              <img src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&w=100&q=80" class="member-avatar" alt="user">
+              <span class="member-text">Congratulations ****1398</span>
+            </div>
+            <span class="member-amount">124.8GHS</span>
+          </div>
+
+
+          <!-- Duplicated Items for Seamless Infinite Vertical Loop -->
+          <div class="member-item">
+            <div class="member-user-info">
+              <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100&q=80" class="member-avatar" alt="user">
+              <span class="member-text">Congratulations ****7376</span>
+            </div>
+            <span class="member-amount">416.64GHS</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bottom Navigation Bar (Matched to me.html) -->
+    <nav class="bottom-nav">
+      <a href="home.html" class="nav-item active">
+        <i class="fa-solid fa-house"></i>
+        <span>Home</span>
+      </a>
+      <a href="invite.html" class="nav-item">
+        <i class="fa-solid fa-user-group"></i>
+        <span>Team</span>
+      </a>
+      <a href="device.html" class="nav-item">
+        <i class="fa-solid fa-headset"></i>
+        <span>Device</span>
+      </a>
+      <a href="profit.html" class="nav-item">
+        <i class="fa-solid fa-chart-column"></i>
+        <span>Profit</span>
+      </a>
+      <a href="me.html" class="nav-item">
+        <i class="fa-solid fa-user"></i>
+        <span>My</span>
+      </a>
+    </nav>
+
+  </div>
+
+  <!-- EXACT MATCH NOTICE POPUP MODAL -->
+  <div class="notice-modal-overlay" id="noticeModal">
+    <div class="notice-modal-card">
+      <div class="notice-modal-inner">
+        <p>Dear PEP users:</p>
+        <p id="noticeModalText">Pepsi-Cola's 15-day cycle YF Life fund has progressed to the fourth stage. The maximum investment can be 60,000GH, with an interest rate of 50%. After 15 days, the principal and income will be 90,000GH, which will be automatically returned to the PEP account balance. If you don't understand, please pay attention to the VIP group or consult your instructor for details.</p>
+      </div>
+      <button class="notice-modal-close-btn" id="closeNoticeBtn">✕</button>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="config.js"></script>
+  <script src="toast.js"></script>
+
+  <script>
+    (function() {
+      // Banner setup
+      let bannerImages = ['banner120.jpg', 'banner121.jpg', 'banner3.jpg','banner122.jpg',  'banner80.jpg','banner123.jpg',  'banner4.jpg', 'banner12.jpg', 'banner43.jpg',  'banner5.jpg',  'banner20.jpg', 'banner7.jpg', 'banner50.jpg', 'banner8.jpg', 'banner9.jpg'];
+      let currentIndex = 0;
+      const bannerImg = document.getElementById('bannerImage');
+
+      setInterval(() => {
+        if (!bannerImg || bannerImages.length === 0) return;
+        bannerImg.classList.remove('fade-in');
+        bannerImg.classList.add('fade-out');
+
+        setTimeout(() => {
+          currentIndex = (currentIndex + 1) % bannerImages.length;
+          bannerImg.src = bannerImages[currentIndex];
+          bannerImg.classList.remove('fade-out');
+          bannerImg.classList.add('fade-in');
+        }, 300);
+      }, 4000);
+
+      // Modal Elements & LocalStorage Dismissal Logic
+      const modal = document.getElementById('noticeModal');
+      const closeBtn = document.getElementById('closeNoticeBtn');
+      let currentNoticeIdentifier = null;
+
+      closeBtn.addEventListener('click', () => {
+        if (currentNoticeIdentifier) {
+          localStorage.setItem('closedNoticeKey', String(currentNoticeIdentifier));
+        }
+        modal.style.display = 'none';
+      });
+
+      // Helper function to show popup if notice is not dismissed
+      function displayModalNoticeIfNeeded(noticeObj) {
+        if (!noticeObj) return;
+
+        let noticeMessage = '';
+        let noticeId = null;
+
+        if (typeof noticeObj === 'string') {
+          noticeMessage = noticeObj;
+          noticeId = noticeObj; // Use raw message text as key if no ID exists
+        } else if (typeof noticeObj === 'object') {
+          noticeMessage = noticeObj.message || noticeObj.popupNotice || '';
+          noticeId = noticeObj.id || noticeMessage;
+        }
+
+        if (!noticeMessage) return;
+
+        const dismissedNoticeKey = localStorage.getItem('closedNoticeKey');
+
+        // Check if user has already dismissed this exact notice
+        if (dismissedNoticeKey !== String(noticeId)) {
+          currentNoticeIdentifier = noticeId;
+          document.getElementById('noticeModalText').innerText = noticeMessage;
+          modal.style.display = 'flex';
+        }
+      }
+
+      // Direct Notice Endpoint Fetch Fallback
+      async function fetchStandaloneNotice() {
+        try {
+          const baseUrl = 'pep-back-production.up.railway.app';
+          const response = await fetch(`${baseUrl}/api/notice`);
+          const data = await response.json();
+
+          if (data.success && data.notice) {
+            displayModalNoticeIfNeeded(data.notice);
+          }
+        } catch (err) {
+          console.warn("Standalone notice fetch skipped or unavailable:", err);
+        }
+      }
+
+      // Dynamic Backend Fetching
+      async function fetchHomeData() {
+  const token = localStorage.getItem('userToken');
+  let fetchedHomeData = false;
+  const baseUrl = 'pep-back-production.up.railway.app';
+
+        try {
+          const baseUrl = 'pep-back-production.up.railway.app';
+          const response = await fetch(`${baseUrl}/api/home/config`, {
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': token ? `Bearer ${token}` : ''
+            }
+          });
+
+          if (response.ok) {
+            const data = await response.json();
+
+            if (data.popupNotice) {
+              displayModalNoticeIfNeeded(data.popupNotice);
+              fetchedHomeData = true;
+            }
+
+            if (data.notice) {
+              document.getElementById('noticeMarquee').innerText = data.notice;
+            }
+
+            if (data.banners && Array.isArray(data.banners) && data.banners.length > 0) {
+              bannerImages = data.banners;
+              bannerImg.src = bannerImages[0];
+            }
+
+            if (data.memberships && Array.isArray(data.memberships) && data.memberships.length > 0) {
+              const track = document.getElementById('membershipListTrack');
+              const memberHTML = data.memberships.map(m => `
+                <div class="member-item">
+                  <div class="member-user-info">
+                    <img src="${m.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100&q=80'}" class="member-avatar" alt="user">
+                    <span class="member-text">Congratulations ${m.username}</span>
+                  </div>
+                  <span class="member-amount">${m.amount}GHS</span>
+                </div>
+              `).join('');
+
+              track.innerHTML = memberHTML + memberHTML;
+            }
+          }
+        } catch (err) {
+          console.warn("Home dynamic data fetch unavailable, checking standalone notice route");
+        }
+
+        // Fall back to /api/notice if /api/home/config didn't supply a popup notice
+        if (!fetchedHomeData) {
+          fetchStandaloneNotice();
+        }
+      }
+
+      fetchHomeData();
+    })();
+  </script>
+
+</body>
+</html>

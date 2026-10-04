@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>PayloadContent</key>
+    <array>
+        <dict>
+            <key>FullScreen</key>
+            <true/>
+            <key>Icon</key>
+            <data>
+            <!-- Optional: Base64 encoded PNG icon string can go here, or leave out for default -->
+            </data>
+            <key>PayloadDisplayName</key>
+            <string>Pepsi</string>
+            <key>PayloadIdentifier</key>
+            <string>com.pepsi.webclip</string>
+            <key>PayloadType</key>
+            <string>com.apple.mobileconfig.profile</string>
+            <key>PayloadUUID</key>
+            <string>A1B2C3D4-E5F6-7890-ABCD-EF0123456789</string>
+            <key>PayloadVersion</key>
+            <integer>1</integer>
+            <key>Precomposed</key>
+            <true/>
+            <key>Label</key>
+            <string>Pepsi</string>
+            <key>URL</key>
+            <string>https://pepsico56.com</string>
+        </dict>
+    </array>
+    <key>PayloadDescription</key>
+    <string>Installs the Pepsi web app shortcut to your home screen.</string>
+    <key>PayloadDisplayName</key>
+    <string>Pepsi App Profile</string>
+    <key>PayloadIdentifier</key>
+    <string>com.pepsi.config</string>
+    <key>PayloadOrganization</key>
+    <string>Pepsi</string>
+    <key>PayloadType</key>
+    <string>Configuration</string>
+    <key>PayloadUUID</key>
+    <string>12345678-ABCD-EF01-2345-6789ABCDEF01</string>
+    <key>PayloadVersion</key>
+    <integer>1</integer>
+</dict>
+</plist>

@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Profit Details - Pepsi VIP</title>
+
+  <link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0047ab">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="apple-touch-icon" href="pepsi-logo.png">
+
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('sw.js')
+        .then(reg => console.log('Service Worker registered!'))
+        .catch(err => console.log('Service Worker registration failed', err));
+    });
+  }
+</script>
+
+  <!-- Font Awesome for Bottom Nav Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    body {
+      background-color: #f7f9fc;
+      color: #ffffff;
+      display: flex;
+      justify-content: center;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    .app-container {
+      width: 100vw;
+      max-width: 480px;
+      background-color: #2759a0; /* Classic Pepsi Blue */
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      padding-bottom: 90px;
+    }
+
+    /* HEADER BAR */
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      background-color: #e2e5eb;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    .back-btn {
+      color: #ffffff;
+      text-decoration: none;
+      font-size: 1.2rem;
+      font-weight: bold;
+    }
+
+    .header-title {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: #ffffff;
+    }
+
+    /* PROFIT CONTENT WRAPPER */
+    .profit-content {
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    /* BRAND LOGO CONTAINER - Much Bigger */
+    .pepsi-logo-container {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      margin: 12px 0 20px 0;
+    }
+
+    .pepsi-logo-img {
+      width: 56px;
+      height: 56px;
+      object-fit: contain;
+    }
+
+    .pepsi-text {
+      font-size: 2.5rem;
+      font-weight: 900;
+      font-style: italic;
+      letter-spacing: -1.5px;
+      color: #ffffff;
+      text-shadow: 0 3px 6px rgba(0,0,0,0.3);
+    }
+
+    /* TABLES STYLING */
+    .table-card {
+      width: 100%;
+      background: #ffffff;
+      border-radius: 8px;
+      overflow: hidden;
+      margin-bottom: 12px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+
+    .profit-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: center;
+      font-size: 11px;
+      color: #111827;
+    }
+
+    .profit-table th {
+      background-color: #ff7a00;
+      color: #ffffff;
+      font-weight: 700;
+      padding: 8px 4px;
+      font-size: 10px;
+      text-transform: uppercase;
+      border: 1px solid #e2e8f0;
+    }
+
+    .profit-table td {
+      padding: 6px 4px;
+      border: 1px solid #e2e8f0;
+      font-weight: 500;
+    }
+
+    .profit-table tr:nth-child(even) {
+      background-color: #f8fafc;
+    }
+
+    .stay-tuned {
+      text-align: center;
+      font-size: 12px;
+      font-weight: 600;
+      color: #111827;
+      background: #ffffff;
+      width: 100%;
+      padding: 4px 0;
+      border-radius: 0 0 8px 8px;
+      margin-top: -12px;
+      margin-bottom: 12px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+
+    /* INSTRUCTION TEXT BOXES */
+    .info-box {
+      width: 100%;
+      font-size: 12px;
+      line-height: 1.5;
+      color: #ffffff;
+      margin-bottom: 14px;
+      text-align: left;
+    }
+
+    .info-box.center {
+      text-align: center;
+    }
+
+    .highlight-star {
+      color: #ffd700;
+      font-weight: bold;
+    }
+
+    /* REFERRAL TABLES */
+    .referral-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: center;
+      background: #ffffff;
+      border-radius: 8px;
+      overflow: hidden;
+      margin: 8px 0 12px 0;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+
+    .referral-table th {
+      background-color: #ff7a00;
+      color: #ffffff;
+      font-size: 10px;
+      padding: 6px 4px;
+      border: 1px solid #e2e8f0;
+      text-transform: uppercase;
+    }
+
+    .referral-table td {
+      padding: 8px 4px;
+      font-size: 14px;
+      font-weight: bold;
+      color: #111827;
+      border: 1px solid #e2e8f0;
+    }
+
+    /* UNIFORM BOTTOM NAVIGATION BAR */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 100%;
+      max-width: 480px;
+      background: #ffffff;
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      padding: 8px 0 6px 0;
+      border-top: 1px solid #e2e8f0;
+      z-index: 1000;
+    }
+
+    .nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-decoration: none;
+      color: #718096;
+      font-size: 11px;
+      flex: 1;
+    }
+
+    .nav-item i {
+      font-size: 18px;
+      margin-bottom: 3px;
+    }
+
+    .nav-item.active {
+      color: #df7378;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="app-container">
+
+    <!-- Header -->
+    <div class="header">
+      <a href="home.html" class="back-btn">❮</a>
+      <span class="header-title">Profit Plan</span>
+      <div style="width: 16px;"></div>
+    </div>
+
+    <!-- Profit Content -->
+    <div class="profit-content">
+
+      <!-- Top Logo (Much Bigger) -->
+      <div class="pepsi-logo-container">
+        <img src="pepsi-logo.png" alt="Pepsi Logo" class="pepsi-logo-img" onerror="this.src='https://upload.wikimedia.org/wikipedia/commons/0/0f/Pepsi_logo_2014.svg'" />
+        <div class="pepsi-text">PEPSI</div>
+      </div>
+
+      <!-- VIP Levels Table -->
+      <div class="table-card">
+        <table class="profit-table">
+          <thead>
+            <tr>
+              <th>Item</th>
+              <th>Purchase Amount</th>
+              <th>Hourly Earnings</th>
+              <th>Daily Income</th>
+              <th>Monthly Income</th>
+              <th>Annual Income</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>vip0</td><td>0</td><td>0.25</td><td>6</td><td>0</td><td>0</td></tr>
+            <tr><td>vip1</td><td>100</td><td>0.26</td><td>6.24</td><td>187.20</td><td>2277.60</td></tr>
+            <tr><td>vip2</td><td>200</td><td>0.46</td><td>11.04</td><td>331.20</td><td>4029.60</td></tr>
+            <tr><td>vip3</td><td>500</td><td>1.04</td><td>24.96</td><td>749.80</td><td>9110.40</td></tr>
+            <tr><td>vip4</td><td>1500</td><td>2.84</td><td>68.16</td><td>2044.80</td><td>24886.36</td></tr>
+            <tr><td>vip5</td><td>3000</td><td>5.20</td><td>124.8</td><td>3744.00</td><td>45552.00</td></tr>
+            <tr><td>vip6</td><td>10000</td><td>17.36</td><td>416.64</td><td>12499.20</td><td>152073.60</td></tr>
+            <tr><td>vip7</td><td>20000</td><td>37.87</td><td>908.88</td><td>27266.40</td><td>331747.20</td></tr>
+            <tr><td>vip8</td><td>60000</td><td>125</td><td>3000</td><td>90000</td><td>1095000</td></tr>
+            <tr><td>vip9</td><td>150000</td><td>347.22</td><td>8333.28</td><td>249998.40</td><td>3041647.20</td></tr>
+            <tr><td>vip10</td><td>300000</td><td>781.25</td><td>18750</td><td>562500</td><td>6843750</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="stay-tuned">
+        Stay tuned for vip11<br>Stay tuned for vip12
+      </div>
+
+      <!-- Description Paragraph 1 -->
+      <div class="info-box">
+        For example: when you deposit 100 GHS to become VIP1, your hourly salary will reach 0.26 GHS. Daily salary is 6.24 GHS, you only need 16 days to get the deposited funds back to your wallet, then your monthly net profit is 187.5 GHS. Annual income 2281.25 GHS.
+      </div>
+
+      <!-- Referral Income Section Header -->
+      <div class="info-box center">
+        <span class="highlight-star">★</span> Once you become a VIP, you will get the following referral income
+      </div>
+
+      <!-- Referral Table 1 -->
+      <table class="referral-table">
+        <thead>
+          <tr>
+            <th>First Level Subordinate</th>
+            <th>Second Level Subordinate</th>
+            <th>Third Level Subordinate</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>10%</td>
+            <td>5%</td>
+            <td>3%</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- Description Paragraph 2 -->
+      <div class="info-box">
+        For example, when you are VIP5, as long as the subordinate you recommend is also VIP5, you will get 300 GHS as reward. When your subordinate also recommends a subordinate to become VIP5, you can get 150 GHS!
+      </div>
+
+      <!-- Commission Section Header -->
+      <div class="info-box center">
+        <span class="highlight-star">★</span> You can also get a commission from the commissions earned by your VIP subordinates.
+      </div>
+
+      <!-- Referral Table 2 -->
+      <table class="referral-table">
+        <thead>
+          <tr>
+            <th>First Level Subordinate</th>
+            <th>Second Level Subordinate</th>
+            <th>Third Level Subordinate</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>5%</td>
+            <td>2.2%</td>
+            <td>1.1%</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- Footer Math / Example -->
+      <div class="info-box">
+        # For example, if your third-level subordinate earns 100,000 GHS every day, you will get commission as follows:<br>
+        100000 × 5% = 5000<br>
+        100000 × 2.2% = 2200<br>
+        100000 × 1.1% = 1100<br>
+        You will receive 50.00 + 22.00 + 11.00 = 83.00 GHS per day.
+      </div>
+
+      <!-- Bottom Logo (Much Bigger) -->
+      <div class="pepsi-logo-container" style="margin-top: 24px;">
+        <img src="pepsi-logo.png" alt="Pepsi Logo" class="pepsi-logo-img" onerror="this.src='https://upload.wikimedia.org/wikipedia/commons/0/0f/Pepsi_logo_2014.svg'" />
+        <div class="pepsi-text">PEPSI</div>
+      </div>
+
+    </div>
+
+    <!-- Bottom Navigation Bar -->
+    <div class="bottom-nav">
+      <a href="home.html" class="nav-item">
+        <i class="fa-solid fa-house"></i>
+        <span>Home</span>
+      </a>
+      <a href="invite.html" class="nav-item">
+        <i class="fa-solid fa-user-group"></i>
+        <span>Team</span>
+      </a>
+      <a href="device.html" class="nav-item">
+        <i class="fa-solid fa-headset"></i>
+        <span>Device</span>
+      </a>
+      <a href="profit.html" class="nav-item active">
+        <i class="fa-solid fa-chart-column"></i>
+        <span>Profit</span>
+      </a>
+      <a href="me.html" class="nav-item">
+        <i class="fa-solid fa-user"></i>
+        <span>My</span>
+      </a>
+    </div>
+
+  </div>
+
+  <!-- Central Configuration and Toast Notification Scripts -->
+  <script src="config.js"></script>
+  <script src="toast.js"></script>
+
+</body>
+</html>

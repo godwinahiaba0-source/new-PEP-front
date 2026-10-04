@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>App Platform - Welcome</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    body {
+      background-color: #ffffff;
+      color: #333333;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow-x: hidden;
+    }
+
+    .screen {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      transition: opacity 0.4s ease, visibility 0.4s ease;
+      background-color: #ffffff;
+    }
+
+    .hidden {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    #welcome-screen {
+      position: relative;
+    }
+
+    .bg-image {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      z-index: 1;
+    }
+
+    .circle-countdown {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      z-index: 2;
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: rgba(0, 0, 0, 0.65);
+      border: 2px solid rgba(255, 255, 255, 0.4);
+      backdrop-filter: blur(6px);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 1.1rem;
+      font-weight: bold;
+      color: #ffffff;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    }
+
+    #auth-screen {
+      z-index: 3;
+    }
+
+    .auth-container {
+      width: 100%;
+      max-width: 360px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .logo-box {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-bottom: 25px;
+    }
+
+    .logo-img {
+      width: 80px;
+      height: 80px;
+      border-radius: 16px;
+      object-fit: cover;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      margin-bottom: 8px;
+    }
+
+    .logo-title {
+      font-size: 1rem;
+      font-weight: 600;
+      color: #555555;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .auth-form {
+      width: 100%;
+      display: none;
+    }
+
+    .auth-form.active {
+      display: block;
+    }
+
+    .input-field {
+      display: flex;
+      align-items: center;
+      background-color: #f7f8fa;
+      border: 1px solid #e8ecef;
+      border-radius: 8px;
+      padding: 0 14px;
+      height: 48px;
+      margin-bottom: 14px;
+      position: relative;
+    }
+
+    .input-icon {
+      width: 20px;
+      height: 20px;
+      color: #a0aec0;
+      margin-right: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .input-icon svg {
+      width: 100%;
+      height: 100%;
+      fill: currentColor;
+    }
+
+    .input-field input {
+      flex: 1;
+      border: none;
+      background: transparent;
+      font-size: 0.88rem;
+      color: #2d3748;
+      outline: none;
+    }
+
+    .input-field input::placeholder {
+      color: #a0aec0;
+    }
+
+    .eye-btn {
+      background: none;
+      border: none;
+      color: #a0aec0;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 4px;
+    }
+
+    .eye-btn svg {
+      width: 18px;
+      height: 18px;
+      fill: currentColor;
+    }
+
+    .captcha-badge {
+      background: #edf2f7;
+      color: #2b6cb0;
+      font-weight: 700;
+      font-size: 0.9rem;
+      letter-spacing: 2px;
+      padding: 6px 10px;
+      border-radius: 6px;
+      border: 1px dashed #cbd5e0;
+      cursor: pointer;
+      user-select: none;
+      margin-left: 8px;
+      flex-shrink: 0;
+      box-shadow: inset 0 1px 2px rgba(0,0,0,0.05);
+    }
+
+    .captcha-badge:hover {
+      background: #e2e8f0;
+    }
+
+    .remember-option {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.825rem;
+      color: #718096;
+      margin-bottom: 20px;
+      user-select: none;
+    }
+
+    .remember-option input[type="checkbox"] {
+      accent-color: #ff5733;
+      cursor: pointer;
+    }
+
+    .main-btn {
+      width: 100%;
+      height: 46px;
+      background-color: #ff7654;
+      color: #ffffff;
+      font-size: 0.9rem;
+      font-weight: 500;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      margin-bottom: 12px;
+      transition: background-color 0.2s;
+    }
+
+    .main-btn:disabled {
+      background-color: #fca5a5;
+      cursor: not-allowed;
+    }
+
+    .main-btn:hover:not(:disabled) {
+      background-color: #e86343;
+    }
+
+    .download-app-btn {
+      width: 100%;
+      height: 46px;
+      background-color: #ffffff;
+      color: #5bb3c6;
+      border: 1px solid #62c3d7;
+      font-size: 0.85rem;
+      font-weight: 500;
+      border-radius: 8px;
+      cursor: pointer;
+      margin-bottom: 16px;
+      transition: background-color 0.2s;
+    }
+
+    .download-app-btn:hover {
+      background-color: #f4fcfe;
+    }
+
+    .login-footer-link {
+      font-size: 0.85rem;
+      color: #333333;
+      text-align: left;
+      margin-top: 6px;
+    }
+
+    .login-footer-link span {
+      color: #38bdf8;
+      cursor: pointer;
+      font-weight: 500;
+    }
+
+    .login-footer-link span:hover {
+      text-decoration: underline;
+    }
+
+    .secondary-btn {
+      width: 100%;
+      height: 46px;
+      background-color: #ffffff;
+      color: #20c997;
+      border: 1px solid #20c997;
+      font-size: 0.95rem;
+      font-weight: 500;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+
+    .secondary-btn:hover {
+      background-color: #f0fdf4;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- WELCOME / COUNTDOWN SCREEN -->
+  <div id="welcome-screen" class="screen">
+    <img src="logimg.png" alt="Welcome Background" class="bg-image" />
+    <div class="circle-countdown" id="timer">5</div>
+  </div>
+
+  <!-- LOGIN / SIGNUP SCREEN -->
+  <div id="auth-screen" class="screen hidden">
+    <div class="auth-container">
+      <div class="logo-box">
+        <img src="welcm.jpg" alt="Logo" class="logo-img" />
+        <span class="logo-title">PEP</span>
+      </div>
+
+      <!-- LOGIN FORM -->
+      <form id="login-form" class="auth-form active" onsubmit="handleLogin(event)">
+        <div class="input-field">
+          <span class="input-icon">
+            <svg viewBox="0 0 24 24"><path d="M17 1.01L7 1c-1.1 0-2 .9-2 2v18c0 1.1.9 2 2 2h10c1.1 0 2-.9 2-2V3c0-1.1-.9-1.99-2-1.99zM17 19H7V5h10v14z"/></svg>
+          </span>
+          <input type="tel" id="login-phone" placeholder="Please enter your phone number" pattern="[0-9]{9,10}" maxlength="10" required />
+        </div>
+
+        <div class="input-field">
+          <span class="input-icon">
+            <svg viewBox="0 0 24 24"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></svg>
+          </span>
+          <input type="password" id="login-password" placeholder="Please enter the login password" required />
+          <button type="button" class="eye-btn" onclick="togglePasswordVisibility('login-password', this)">
+            <svg viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
+          </button>
+        </div>
+
+        <label class="remember-option">
+          <input type="checkbox" id="remember-me" checked />
+          Remember username/password
+        </label>
+
+        <button type="submit" id="login-submit-btn" class="main-btn">Log In</button>
+        <button type="button" class="secondary-btn" onclick="showForm('signup')">Register now</button>
+      </form>
+
+      <!-- SIGNUP FORM -->
+      <form id="signup-form" class="auth-form" onsubmit="handleSignup(event)">
+        <div class="input-field">
+          <span class="input-icon">
+            <svg viewBox="0 0 24 24"><path d="M17 1.01L7 1c-1.1 0-2 .9-2 2v18c0 1.1.9 2 2 2h10c1.1 0 2-.9 2-2V3c0-1.1-.9-1.99-2-1.99zM17 19H7V5h10v14z"/></svg>
+          </span>
+          <input type="tel" id="signup-phone" placeholder="Please enter your phone number" pattern="[0-9]{9,10}" maxlength="10" required />
+        </div>
+
+        <div class="input-field">
+          <span class="input-icon">
+            <svg viewBox="0 0 24 24"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></svg>
+          </span>
+          <input type="password" id="signup-password" placeholder="Please enter the login password" required />
+          <button type="button" class="eye-btn" onclick="togglePasswordVisibility('signup-password', this)">
+            <svg viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
+          </button>
+        </div>
+
+        <div class="input-field">
+          <span class="input-icon">
+            <svg viewBox="0 0 24 24"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></svg>
+          </span>
+          <input type="password" id="confirm-password" placeholder="Please confirm your password" required />
+          <button type="button" class="eye-btn" onclick="togglePasswordVisibility('confirm-password', this)">
+            <svg viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
+          </button>
+        </div>
+
+        <div class="input-field">
+          <span class="input-icon">
+            <svg viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-2 16l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z"/></svg>
+          </span>
+          <input type="text" id="verification-input" placeholder="Please enter the verification code" maxlength="4" required />
+          <div id="captcha-code" class="captcha-badge" onclick="generateCaptcha()" title="Click to refresh">8888</div>
+        </div>
+
+        <div class="input-field">
+          <span class="input-icon">
+            <svg viewBox="0 0 24 24"><path d="M20 6h-2.18c-.11-.31-.26-.6-.44-.88l1.37-1.37c.39-.39.39-1.02 0-1.41-.39-.39-1.02-.39-1.41 0l-1.46 1.46C15.01 3.29 13.56 3 12 3c-1.56 0-3.01.29-4.88.8L5.66 2.34c-.39-.39-1.02-.39-1.41 0-.39.39-.39 1.02 0 1.41l1.37 1.37c-.18.28-.33.57-.44.88H3c-.55 0-1 .45-1 1v12c0 .55.45 1 1 1h18c.55 0 1-.45 1-1V7c0-.55-.45-1-1-1zm-8 10c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4z"/></svg>
+          </span>
+          <input type="text" id="invite-code" placeholder="Please enter the invitation code" required />
+        </div>
+
+        <button type="submit" id="signup-submit-btn" class="main-btn">Register now</button>
+        <button type="button" class="download-app-btn" onclick="handleAppDownload()">Have an account download APP</button>
+
+        <div class="login-footer-link">
+          Have an account? <span onclick="showForm('login')">Login</span>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- External Centralized Dependencies -->
+  <script src="config.js"></script>
+  <script src="validation.js"></script>
+  <script src="toast.js"></script>
+  
+  <script>
+    let deferredPrompt;
+
+    function resolveBaseUrl() {
+      if (typeof API_BASE_URL !== 'undefined' && API_BASE_URL) {
+        return API_BASE_URL;
+      }
+      const hostname = window.location.hostname;
+      if (hostname === 'localhost' || hostname === '127.0.0.1') {
+        return 'http://localhost:8080';
+      }
+      return 'pep-back-production.up.railway.app';
+    }
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+    });
+
+    function handleAppDownload() {
+      const userAgent = navigator.userAgent || navigator.vendor || window.opera;
+      const isIOS = /iPad|iPhone|iPod/.test(userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+
+      if (isIOS) {
+        const link = document.createElement('a');
+        link.href = 'profile.mobileconfig';
+        link.setAttribute('download', 'profile.mobileconfig');
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+
+        setTimeout(() => {
+          if (typeof showToast === 'function') {
+            showToast('Profile downloaded! Check Settings to install Pepsi.', 'info');
+          } else {
+            alert('Profile downloaded! Please go to your iPhone Settings → "Profile Downloaded" to install the Pepsi app.');
+          }
+        }, 500);
+      } else {
+        if (deferredPrompt) {
+          deferredPrompt.prompt();
+          deferredPrompt.userChoice.then((choiceResult) => {
+            if (choiceResult.outcome === 'accepted') {
+              console.log('User accepted the PWA install prompt');
+            }
+            deferredPrompt = null;
+          });
+        } else {
+          if (typeof showToast === 'function') {
+            showToast('Tap browser options (three dots) and select "Add to Home Screen"', 'info');
+          } else {
+            alert('To install Pepsi, tap your browser menu (three dots) and select "Add to Home Screen" or "Install App".');
+          }
+        }
+      }
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      const welcomeScreen = document.getElementById('welcome-screen');
+      const authScreen = document.getElementById('auth-screen');
+      const timerElement = document.getElementById('timer');
+      let generatedCaptcha = "";
+
+      // Auto-fill and lock invite code from URL parameters (?ref=...)
+      const urlParams = new URLSearchParams(window.location.search);
+      const refParam = urlParams.get('ref');
+      if (refParam) {
+        const inviteInput = document.getElementById('invite-code');
+        if (inviteInput) {
+          inviteInput.value = refParam;
+          inviteInput.readOnly = true;
+          inviteInput.style.backgroundColor = '#edf2f7';
+        }
+      }
+
+      // 1. Countdown Controller
+      let timeLeft = 5;
+      if (timerElement) timerElement.textContent = timeLeft;
+
+      const countdown = setInterval(() => {
+        timeLeft--;
+        if (timeLeft > 0) {
+          if (timerElement) timerElement.textContent = timeLeft;
+        } else {
+          clearInterval(countdown);
+          if (welcomeScreen) welcomeScreen.classList.add('hidden');
+          if (authScreen) authScreen.classList.remove('hidden');
+          generateCaptcha();
+        }
+      }, 1000);
+
+      window.showForm = function(formType) {
+        document.getElementById('login-form').classList.remove('active');
+        document.getElementById('signup-form').classList.remove('active');
+        if (formType === 'login') {
+          document.getElementById('login-form').classList.add('active');
+        } else {
+          document.getElementById('signup-form').classList.add('active');
+          generateCaptcha();
+        }
+      };
+
+      window.togglePasswordVisibility = function(fieldId, btn) {
+        const input = document.getElementById(fieldId);
+        if (input) {
+          input.type = input.type === 'password' ? 'text' : 'password';
+        }
+      };
+
+      window.generateCaptcha = function() {
+        generatedCaptcha = Math.floor(1000 + Math.random() * 9000).toString();
+        const captchaBadge = document.getElementById('captcha-code');
+        if (captchaBadge) {
+          captchaBadge.textContent = generatedCaptcha;
+        }
+      };
+
+      window.handleLogin = async function(e) {
+        e.preventDefault();
+        const phone = document.getElementById('login-phone').value.trim();
+        const password = document.getElementById('login-password').value;
+        const submitBtn = document.getElementById('login-submit-btn');
+
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Logging in...';
+
+        const baseUrl = resolveBaseUrl();
+
+        try {
+          const response = await fetch(`pep-back-production.up.railway.app/api/auth/login`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ phone, password })
+          });
+
+          const data = await response.json();
+
+          if (response.ok && (data.success || data.token)) {
+            localStorage.clear();
+
+            const token = data.token || data.accessToken;
+            if (token) {
+              localStorage.setItem('userToken', token);
+              localStorage.setItem('token', token);
+            }
+            if (data.user) {
+              localStorage.setItem('userData', JSON.stringify(data.user));
+            }
+
+            if (typeof showToast === 'function') showToast('Login successful!', 'success');
+            setTimeout(() => { window.location.href = 'home.html'; }, 1000);
+          } else {
+            if (typeof showToast === 'function') showToast(data.message || 'Invalid login details.', 'error');
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Log In';
+          }
+        } catch (error) {
+          console.error("Login Error:", error);
+          if (typeof showToast === 'function') showToast('Server connection error', 'error');
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Log In';
+        }
+      };
+
+      // Signup Handler with Backend Invitation Code Verification
+      window.handleSignup = async function(e) {
+        e.preventDefault();
+        const phone = document.getElementById('signup-phone').value.trim();
+        const pass = document.getElementById('signup-password').value;
+        const confirmPass = document.getElementById('confirm-password').value;
+        const userCaptcha = document.getElementById('verification-input').value.trim();
+        const inviteCode = document.getElementById('invite-code').value.trim();
+        const submitBtn = document.getElementById('signup-submit-btn');
+
+        if (pass !== confirmPass) {
+          if (typeof showToast === 'function') showToast('Passwords do not match.', 'error');
+          return;
+        }
+
+        if (userCaptcha !== generatedCaptcha) {
+          if (typeof showToast === 'function') showToast('Incorrect verification code.', 'error');
+          generateCaptcha();
+          document.getElementById('verification-input').value = "";
+          return;
+        }
+
+        if (!inviteCode) {
+          if (typeof showToast === 'function') showToast('Please enter invitation code.', 'warning');
+          return;
+        }
+
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Verifying...';
+
+        const baseUrl = resolveBaseUrl();
+
+        try {
+          // STEP 1: Verify that the invitation code actually exists on the backend server
+          const verifyResponse = await fetch(`pep-back-production.up.railway.app/api/auth/verify-invite`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ inviteCode: inviteCode })
+          });
+
+          const verifyData = await verifyResponse.json();
+
+          if (!verifyResponse.ok || !verifyData.success) {
+            if (typeof showToast === 'function') {
+              showToast(verifyData.message || 'Invalid invitation code. Random codes are not allowed.', 'error');
+            }
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Register now';
+            return;
+          }
+
+          // STEP 2: Proceed with account registration if the code is valid
+          submitBtn.textContent = 'Registering...';
+          const response = await fetch(`pep-back-production.up.railway.app/api/auth/register`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ phone, password: pass, inviteCode })
+          });
+
+          const data = await response.json();
+
+          if (response.ok && (data.success || data.token)) {
+            localStorage.clear();
+
+            const token = data.token || data.accessToken;
+            if (token) {
+              localStorage.setItem('userToken', token);
+              localStorage.setItem('token', token);
+            }
+            if (data.user) {
+              localStorage.setItem('userData', JSON.stringify(data.user));
+            }
+
+            if (typeof showToast === 'function') showToast('Registration successful!', 'success');
+            setTimeout(() => { window.location.href = 'home.html'; }, 1000);
+          } else {
+            if (typeof showToast === 'function') showToast(data.message || 'Registration failed.', 'error');
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Register now';
+          }
+        } catch (error) {
+          console.error("Signup Error:", error);
+          if (typeof showToast === 'function') showToast('Server connection error', 'error');
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Register now';
+        }
+      };
+    });
+  </script>
+</body>
+</html>

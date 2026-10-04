@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Platform Admin Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gray-100 font-sans antialiased">
+
+  <div class="flex h-screen overflow-hidden">
+    <!-- Sidebar -->
+    <aside class="w-64 bg-slate-900 text-white hidden md:flex flex-col">
+      <div class="p-5 text-2xl font-bold tracking-wider text-emerald-400 border-b border-slate-800">
+        <i class="fa-solid fa-shield-halved mr-2"></i> Admin Panel
+      </div>
+      <nav class="flex-1 p-4 space-y-2">
+        <button onclick="switchTab('dashboard')" id="nav-dashboard" class="w-full flex items-center gap-3 px-4 py-3 rounded-lg bg-emerald-600 text-white font-medium transition">
+          <i class="fa-solid fa-chart-pie"></i> Dashboard
+        </button>
+        <button onclick="switchTab('deposits')" id="nav-deposits" class="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-slate-300 hover:bg-slate-800 transition">
+          <i class="fa-solid fa-wallet"></i> Deposits Approval
+        </button>
+        <button onclick="switchTab('withdrawals')" id="nav-withdrawals" class="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-slate-300 hover:bg-slate-800 transition">
+          <i class="fa-solid fa-money-bill-transfer"></i> Withdrawals
+        </button>
+        <button onclick="switchTab('users')" id="nav-users" class="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-slate-300 hover:bg-slate-800 transition">
+          <i class="fa-solid fa-users"></i> Users List
+        </button>
+      </nav>
+      <div class="p-4 border-t border-slate-800">
+        <button onclick="logoutAdmin()" class="w-full flex items-center justify-center gap-2 px-4 py-2 bg-rose-600 hover:bg-rose-700 rounded-lg text-white transition">
+          <i class="fa-solid fa-right-from-bracket"></i> Logout
+        </button>
+      </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="flex-1 flex flex-col overflow-y-auto">
+      <header class="bg-white shadow-sm h-16 flex items-center justify-between px-6">
+        <h1 id="page-title" class="text-xl font-bold text-slate-800">System Overview</h1>
+        <div class="text-sm font-semibold text-slate-600" id="admin-phone">Admin Session</div>
+      </header>
+
+      <div class="p-6">
+        <!-- DASHBOARD TAB -->
+        <section id="tab-dashboard" class="space-y-6">
+          <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+              <p class="text-sm text-slate-500 font-medium">Total Users</p>
+              <h3 id="stat-users" class="text-3xl font-bold text-slate-800 mt-2">0</h3>
+            </div>
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+              <p class="text-sm text-slate-500 font-medium">Total User Balances</p>
+              <h3 id="stat-balance" class="text-3xl font-bold text-emerald-600 mt-2">0.00</h3>
+            </div>
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+              <p class="text-sm text-slate-500 font-medium">Pending Deposits</p>
+              <h3 id="stat-deposits" class="text-3xl font-bold text-amber-500 mt-2">0</h3>
+            </div>
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+              <p class="text-sm text-slate-500 font-medium">Pending Withdrawals</p>
+              <h3 id="stat-withdrawals" class="text-3xl font-bold text-rose-500 mt-2">0</h3>
+            </div>
+          </div>
+        </section>
+
+        <!-- DEPOSITS TAB -->
+        <section id="tab-deposits" class="hidden space-y-4">
+          <h2 class="text-lg font-bold text-slate-800">User Deposit Requests</h2>
+          <div class="bg-white rounded-xl shadow-sm overflow-hidden border border-slate-200">
+            <table class="w-full text-left border-collapse">
+              <thead>
+                <tr class="bg-slate-50 text-slate-600 text-xs uppercase tracking-wider border-b">
+                  <th class="p-4">User</th>
+                  <th class="p-4">Amount</th>
+                  <th class="p-4">Channel</th>
+                  <th class="p-4">TxID / Ref</th>
+                  <th class="p-4">Proof</th>
+                  <th class="p-4">Status</th>
+                  <th class="p-4 text-center">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="deposits-table-body" class="divide-y divide-slate-100 text-sm text-slate-700"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- WITHDRAWALS TAB -->
+        <section id="tab-withdrawals" class="hidden space-y-4">
+          <h2 class="text-lg font-bold text-slate-800">User Withdrawal Requests</h2>
+          <div class="bg-white rounded-xl shadow-sm overflow-hidden border border-slate-200">
+            <table class="w-full text-left border-collapse">
+              <thead>
+                <tr class="bg-slate-50 text-slate-600 text-xs uppercase tracking-wider border-b">
+                  <th class="p-4">User</th>
+                  <th class="p-4">Amount</th>
+                  <th class="p-4">Net Payout</th>
+                  <th class="p-4">Method / Account</th>
+                  <th class="p-4">Status</th>
+                  <th class="p-4 text-center">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="withdrawals-table-body" class="divide-y divide-slate-100 text-sm text-slate-700"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- USERS TAB -->
+        <section id="tab-users" class="hidden space-y-4">
+          <h2 class="text-lg font-bold text-slate-800">Registered Platform Users</h2>
+          <div class="bg-white rounded-xl shadow-sm overflow-hidden border border-slate-200">
+            <table class="w-full text-left border-collapse">
+              <thead>
+                <tr class="bg-slate-50 text-slate-600 text-xs uppercase tracking-wider border-b">
+                  <th class="p-4">ID</th>
+                  <th class="p-4">Phone</th>
+                  <th class="p-4">VIP Level</th>
+                  <th class="p-4">Balance</th>
+                  <th class="p-4">Rebate</th>
+                  <th class="p-4">Joined Date</th>
+                </tr>
+              </thead>
+              <tbody id="users-table-body" class="divide-y divide-slate-100 text-sm text-slate-700"></tbody>
+            </table>
+          </div>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    const token = localStorage.getItem('token');
+    if (!token) window.location.href = 'login.html';
+
+    function switchTab(tab) {
+      ['dashboard', 'deposits', 'withdrawals', 'users'].forEach(t => {
+        document.getElementById(`tab-${t}`).classList.add('hidden');
+        document.getElementById(`nav-${t}`).className = "w-full flex items-center gap-3 px-4 py-3 rounded-lg text-slate-300 hover:bg-slate-800 transition";
+      });
+      document.getElementById(`tab-${tab}`).classList.remove('hidden');
+      document.getElementById(`nav-${tab}`).className = "w-full flex items-center gap-3 px-4 py-3 rounded-lg bg-emerald-600 text-white font-medium transition";
+      
+      const titles = { dashboard: 'System Overview', deposits: 'Deposits Management', withdrawals: 'Withdrawals Management', users: 'Users Directory' };
+      document.getElementById('page-title').innerText = titles[tab];
+
+      if(tab === 'dashboard') loadStats();
+      if(tab === 'deposits') loadDeposits();
+      if(tab === 'withdrawals') loadWithdrawals();
+      if(tab === 'users') loadUsers();
+    }
+
+    async function loadStats() {
+      try {
+        const res = await fetch('/api/admin/stats', { headers: { 'Authorization': `Bearer ${token}` } });
+        const data = await res.json();
+        if(data.success) {
+          document.getElementById('stat-users').innerText = data.stats.totalUsers;
+          document.getElementById('stat-balance').innerText = parseFloat(data.stats.totalBalance).toFixed(2);
+          document.getElementById('stat-deposits').innerText = data.stats.pendingDeposits;
+          document.getElementById('stat-withdrawals').innerText = data.stats.pendingWithdrawals;
+        }
+      } catch (err) { console.error(err); }
+    }
+
+    async function loadDeposits() {
+      const res = await fetch('/api/admin/deposits', { headers: { 'Authorization': `Bearer ${token}` } });
+      const data = await res.json();
+      const tbody = document.getElementById('deposits-table-body');
+      tbody.innerHTML = '';
+      if(data.success) {
+        data.deposits.forEach(d => {
+          tbody.innerHTML += `
+            <tr class="hover:bg-slate-50">
+              <td class="p-4 font-semibold">${d.phone}</td>
+              <td class="p-4 text-emerald-600 font-bold">${d.amount}</td>
+              <td class="p-4">${d.channel}</td>
+              <td class="p-4 text-xs text-slate-500">${d.transaction_id || d.reference || 'N/A'}</td>
+              <td class="p-4">${d.proof_image ? `<a href="${d.proof_image}" target="_blank" class="text-blue-600 underline">View</a>` : 'None'}</td>
+              <td class="p-4"><span class="px-2 py-1 rounded text-xs font-semibold ${d.status === 'approved' ? 'bg-emerald-100 text-emerald-700' : d.status === 'rejected' ? 'bg-rose-100 text-rose-700' : 'bg-amber-100 text-amber-700'}">${d.status}</span></td>
+              <td class="p-4 text-center space-x-2">
+                ${d.status === 'pending' ? `
+                  <button onclick="processDeposit(${d.id}, 'approve')" class="px-3 py-1 bg-emerald-600 text-white rounded text-xs hover:bg-emerald-700">Approve</button>
+                  <button onclick="processDeposit(${d.id}, 'reject')" class="px-3 py-1 bg-rose-600 text-white rounded text-xs hover:bg-rose-700">Reject</button>
+                ` : '-'}
+              </td>
+            </tr>`;
+        });
+      }
+    }
+
+    async function processDeposit(id, action) {
+      if(!confirm(`Are you sure you want to ${action} this deposit?`)) return;
+      const res = await fetch('/api/admin/deposits/action', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify({ depositId: id, action })
+      });
+      const data = await res.json();
+      alert(data.message);
+      loadDeposits();
+    }
+
+    async function loadWithdrawals() {
+      const res = await fetch('/api/admin/withdrawals', { headers: { 'Authorization': `Bearer ${token}` } });
+      const data = await res.json();
+      const tbody = document.getElementById('withdrawals-table-body');
+      tbody.innerHTML = '';
+      if(data.success) {
+        data.withdrawals.forEach(w => {
+          tbody.innerHTML += `
+            <tr class="hover:bg-slate-50">
+              <td class="p-4 font-semibold">${w.phone}</td>
+              <td class="p-4 font-bold">${w.amount}</td>
+              <td class="p-4 text-emerald-600 font-bold">${w.net_amount}</td>
+              <td class="p-4 text-xs">${w.method}: ${w.account_info}</td>
+              <td class="p-4"><span class="px-2 py-1 rounded text-xs font-semibold ${w.status === 'approved' ? 'bg-emerald-100 text-emerald-700' : w.status === 'rejected' ? 'bg-rose-100 text-rose-700' : 'bg-amber-100 text-amber-700'}">${w.status}</span></td>
+              <td class="p-4 text-center space-x-2">
+                ${w.status === 'pending' ? `
+                  <button onclick="processWithdrawal(${w.id}, 'approve')" class="px-3 py-1 bg-emerald-600 text-white rounded text-xs hover:bg-emerald-700">Approve</button>
+                  <button onclick="processWithdrawal(${w.id}, 'reject')" class="px-3 py-1 bg-rose-600 text-white rounded text-xs hover:bg-rose-700">Reject</button>
+                ` : '-'}
+              </td>
+            </tr>`;
+        });
+      }
+    }
+
+    async function processWithdrawal(id, action) {
+      if(!confirm(`Are you sure you want to ${action} this withdrawal?`)) return;
+      const res = await fetch('/api/admin/withdrawals/action', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify({ withdrawalId: id, action })
+      });
+      const data = await res.json();
+      alert(data.message);
+      loadWithdrawals();
+    }
+
+    async function loadUsers() {
+      const res = await fetch('/api/admin/users', { headers: { 'Authorization': `Bearer ${token}` } });
+      const data = await res.json();
+      const tbody = document.getElementById('users-table-body');
+      tbody.innerHTML = '';
+      if(data.success) {
+        data.users.forEach(u => {
+          tbody.innerHTML += `
+            <tr class="hover:bg-slate-50">
+              <td class="p-4">${u.user_id}</td>
+              <td class="p-4 font-semibold">${u.phone}</td>
+              <td class="p-4">VIP ${u.vip_level}</td>
+              <td class="p-4 text-emerald-600 font-bold">${u.balance}</td>
+              <td class="p-4">${u.referral_rebate}</td>
+              <td class="p-4 text-xs text-slate-500">${new Date(u.created_at).toLocaleString()}</td>
+            </tr>`;
+        });
+      }
+    }
+
+    function logoutAdmin() {
+      localStorage.removeItem('token');
+      window.location.href = 'login.html';
+    }
+
+    // Initialize stats on load
+    loadStats();
+  </script>
+</body>
+</html>

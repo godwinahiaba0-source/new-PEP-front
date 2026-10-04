@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Withdrawal</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    body {
+      background-color: #f7f7f7;
+      color: #333333;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+    }
+
+    .app-container {
+      width: 100vw;
+      max-width: 480px;
+      min-height: 100vh;
+      background-color: #f7f7f7;
+      padding: 12px 16px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* HEADER */
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 44px;
+      margin-bottom: 8px;
+    }
+
+    .back-btn {
+      color: #777777;
+      text-decoration: none;
+      font-size: 1.2rem;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .header-title {
+      font-size: 1.05rem;
+      font-weight: 600;
+      color: #333333;
+    }
+
+    /* TOP CARD - STATIC DISPLAY */
+    .bound-card {
+      background-color: #ffffff;
+      border-radius: 10px;
+      padding: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.02);
+      margin-bottom: 12px;
+      cursor: pointer;
+    }
+
+    .bound-label {
+      font-size: 0.9rem;
+      color: #333333;
+      font-weight: 500;
+    }
+
+    .bound-info-group {
+      display: flex;
+      align-items: center;
+    }
+
+    .bound-details {
+      text-align: right;
+    }
+
+    .bound-title {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: #000000;
+      letter-spacing: 0.3px;
+    }
+
+    .bound-address {
+      font-size: 0.8rem;
+      color: #ff5b5b;
+      margin-top: 2px;
+    }
+
+    .bound-address.has-card {
+      color: #666666;
+    }
+
+    /* MAIN FORM CONTAINER */
+    .form-container {
+      background-color: #ffffff;
+      border-radius: 10px;
+      padding: 16px;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.02);
+      margin-bottom: 30px;
+    }
+
+    /* BALANCE DISPLAY ROW */
+    .balance-row {
+      display: flex;
+      align-items: center;
+      padding-bottom: 14px;
+    }
+
+    .balance-label {
+      font-size: 0.9rem;
+      color: #333333;
+      width: 130px;
+      font-weight: 500;
+    }
+
+    .balance-value {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: #333333;
+    }
+
+    /* FORM INPUT ROWS */
+    .form-row {
+      display: flex;
+      align-items: center;
+      padding: 14px 0;
+    }
+
+    .form-label {
+      font-size: 0.9rem;
+      color: #333333;
+      width: 130px;
+      font-weight: 500;
+      line-height: 1.2;
+    }
+
+    .form-input-wrapper {
+      flex: 1;
+    }
+
+    .form-input {
+      width: 100%;
+      border: none;
+      outline: none;
+      font-size: 0.85rem;
+      color: #333333;
+      background: transparent;
+    }
+
+    .form-input::placeholder {
+      color: #cccccc;
+      font-weight: 400;
+    }
+
+    .form-input:disabled {
+      cursor: not-allowed;
+    }
+
+    /* CONVERSION LINE BELOW AMOUNT */
+    .conversion-row {
+      padding: 2px 0 12px 0;
+    }
+
+    .conversion-text {
+      font-size: 0.85rem;
+      color: #666666;
+      font-weight: 500;
+    }
+
+    /* HANDLING FEE ROW BELOW FUND PASSWORD */
+    .fee-row {
+      display: flex;
+      align-items: center;
+      padding-top: 14px;
+      border-top: 1px solid #f0f0f0;
+      margin-top: 4px;
+    }
+
+    .fee-label {
+      font-size: 0.9rem;
+      color: #333333;
+      font-weight: 500;
+    }
+
+    .fee-value {
+      font-size: 0.9rem;
+      color: #333333;
+      font-weight: 500;
+      margin-left: 6px;
+    }
+
+    /* SUBMIT BUTTON */
+    .btn-submit {
+      width: 100%;
+      height: 44px;
+      background-color: #ff5b5b;
+      color: #ffffff;
+      border: none;
+      border-radius: 22px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: 0 3px 8px rgba(255, 91, 91, 0.3);
+      transition: background-color 0.2s ease;
+    }
+
+    .btn-submit:disabled {
+      background-color: #fca5a5;
+      cursor: not-allowed;
+    }
+
+    .btn-submit:active:not(:disabled) {
+      background-color: #e04e4e;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="app-container">
+    <!-- Top Bar Header -->
+    <div class="header">
+      <a href="me.html" class="back-btn">❮</a>
+      <span class="header-title">Withdrawal</span>
+      <div style="width: 16px;"></div>
+    </div>
+
+    <!-- Bound Card Display Section -->
+    <div class="bound-card" onclick="redirectToBind()">
+      <span class="bound-label">Withdrawal method</span>
+      <div class="bound-info-group">
+        <div class="bound-details">
+          <div class="bound-title" id="display-method" style="display: none;"></div>
+          <div class="bound-address" id="display-address">Please bind card</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Withdrawal Form -->
+    <div class="form-container">
+      <!-- Balance -->
+      <div class="balance-row">
+        <span class="balance-label">Balance</span>
+        <span class="balance-value" id="display-balance">0.00</span>
+      </div>
+
+      <!-- Withdrawal Amount Input -->
+      <div class="form-row">
+        <span class="form-label">Withdrawal<br>amount</span>
+        <div class="form-input-wrapper">
+          <input type="number" id="withdraw-amount" class="form-input" placeholder="Please input the withdrawal amount" oninput="updateCalculations()">
+        </div>
+      </div>
+
+      <!-- Conversion Display Below Amount -->
+      <div class="conversion-row">
+        <span class="conversion-text" id="conversion-display">≈0.00</span>
+      </div>
+
+      <!-- Fund Password Input -->
+      <div class="form-row">
+        <span class="form-label">Fund<br>password</span>
+        <div class="form-input-wrapper">
+          <input type="password" id="fund-password" class="form-input" maxlength="6" inputmode="numeric" placeholder="Please input fund password">
+        </div>
+      </div>
+
+      <!-- Handling Fee -->
+      <div class="fee-row">
+        <span class="fee-label">Handling fee:</span>
+        <span class="fee-value" id="fee-display">0.00</span>
+      </div>
+    </div>
+
+    <!-- Submit Button -->
+    <button class="btn-submit" id="submit-btn" onclick="handleWithdrawal()">Submit</button>
+  </div>
+
+  <script src="config.js"></script>
+  <script src="toast.js"></script>
+  <script>
+    let activeCard = null;
+
+    function resolveBaseUrl() {
+      if (typeof API_BASE_URL !== 'undefined' && API_BASE_URL) {
+        return API_BASE_URL;
+      }
+      const hostname = window.location.hostname;
+      if (hostname === 'localhost' || hostname === '127.0.0.1') {
+        return 'http://localhost:8080';
+      }
+      return 'pep-back-production.up.railway.app';
+    }
+
+    function redirectToBind() {
+      window.location.href = 'bankcard.html';
+    }
+
+    // Universal scanner: checks known keys AND deep-searches all localStorage keys for card data
+    function getStoredCard() {
+      const specificKeys = [
+        'userBankCard', 'bankCard', 'bank_card', 'pepsi_bound_bank', 
+        'user_bank_card', 'bank_details', 'bound_card', 'saved_bank_card',
+        'cardInfo', 'bank', 'cards', 'wallet'
+      ];
+
+      for (const key of specificKeys) {
+        try {
+          const item = localStorage.getItem(key);
+          if (item) {
+            const parsed = JSON.parse(item);
+            if (Array.isArray(parsed) && parsed.length > 0) {
+              return parsed[parsed.length - 1];
+            }
+            if (parsed && typeof parsed === 'object') {
+              return parsed;
+            }
+          }
+        } catch (e) {}
+      }
+
+      for (let i = 0; i < localStorage.length; i++) {
+        const keyName = localStorage.key(i);
+        try {
+          const rawVal = localStorage.getItem(keyName);
+          if (!rawVal) continue;
+          const parsed = JSON.parse(rawVal);
+
+          if (Array.isArray(parsed)) {
+            for (const entry of parsed) {
+              if (entry && typeof entry === 'object' && (entry.account_number || entry.accountNumber || entry.account || entry.phone || entry.channel || entry.bankName)) {
+                return entry;
+              }
+            }
+          } else if (parsed && typeof parsed === 'object') {
+            if (parsed.account_number || parsed.accountNumber || parsed.account || parsed.phone || parsed.channel || parsed.bankName || parsed.bank) {
+              return parsed;
+            }
+          }
+        } catch (e) {}
+      }
+
+      return null;
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      loadUserData();
+    });
+
+    async function loadUserData() {
+      const savedCard = getStoredCard();
+      if (savedCard) {
+        activeCard = savedCard;
+        renderCardInfo(savedCard);
+      }
+
+      const token = localStorage.getItem('token') || localStorage.getItem('userToken');
+      const baseUrl = resolveBaseUrl();
+
+      if (token) {
+        // 1. Fetch balance
+        try {
+          const res = await fetch(`pep-back-production.up.railway.app/api/user/profile`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+          });
+          if (res.ok) {
+            const data = await res.json();
+            const payload = data.data || data;
+            if (payload.balance !== undefined) {
+              document.getElementById('display-balance').textContent = parseFloat(payload.balance).toFixed(2);
+            }
+          }
+        } catch (e) {}
+
+        // 2. Check for active/pending withdrawal requests to lock form if needed
+        try {
+          const statusRes = await fetch(`pep-back-production.up.railway.app/api/withdraw/history`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+          });
+          if (statusRes.ok) {
+            const histData = await statusRes.json();
+            const records = histData.data || histData.withdrawals || histData || [];
+            const hasPending = Array.isArray(records) && records.some(r => {
+              const s = String(r.status || '').toLowerCase();
+              return s === 'pending' || s === 'processing' || s === 'requested' || s === 'under_review';
+            });
+
+            if (hasPending) {
+              lockFormWithWarning("You already have an active withdrawal request being processed.");
+            }
+          }
+        } catch (e) {}
+
+        // 3. Fetch card from backend if local storage is completely empty
+        if (!activeCard) {
+          try {
+            const res = await fetch(`pep-back-production.up.railway.app/api/user/bank-card`, {
+              headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (res.ok) {
+              const data = await res.json();
+              const cardData = data.bankCard || data.userCard || data.bank || data.card || data.data;
+              if (cardData) {
+                activeCard = cardData;
+                localStorage.setItem('userBankCard', JSON.stringify(cardData));
+                renderCardInfo(cardData);
+              }
+            }
+          } catch (e) {}
+        }
+      }
+    }
+
+    function lockFormWithWarning(message) {
+      const submitBtn = document.getElementById('submit-btn');
+      const amountInput = document.getElementById('withdraw-amount');
+      const passwordInput = document.getElementById('fund-password');
+
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Active Request Pending';
+      }
+      if (amountInput) amountInput.disabled = true;
+      if (passwordInput) passwordInput.disabled = true;
+
+      notifyUser(message, "warning");
+    }
+
+    function renderCardInfo(card) {
+      if (!card) return;
+
+      const methodElem = document.getElementById('display-method');
+      const addressElem = document.getElementById('display-address');
+
+      const rawChannel = String(
+        card.channel || card.bankName || card.bank_name || card.bank || card.network || card.method || card.type || ''
+      ).toUpperCase();
+
+      const account = String(
+        card.account_number || card.accountNumber || card.account || card.bankCardNumber || card.phone || card.mobile || card.address || card.walletAddress || ''
+      ).trim();
+
+      if (account && account !== 'undefined' && account !== 'null' && account !== '') {
+        let networkDisplay = "MTN";
+
+        if (rawChannel.includes("USDT") || card.isUsdt) {
+          networkDisplay = "USDT-TRC20";
+        } else if (rawChannel.includes("TELECEL") || rawChannel.includes("VODAFONE")) {
+          networkDisplay = "TELECEL";
+        } else if (rawChannel.includes("AT") || rawChannel.includes("AIRTEL")) {
+          networkDisplay = "AT";
+        } else if (rawChannel.includes("MTN")) {
+          networkDisplay = "MTN";
+        } else if (rawChannel) {
+          networkDisplay = rawChannel;
+        }
+
+        methodElem.style.display = 'block';
+        methodElem.textContent = networkDisplay;
+
+        addressElem.textContent = maskAccount(account);
+        addressElem.classList.add('has-card');
+      } else {
+        methodElem.style.display = 'none';
+        addressElem.textContent = "Please bind card";
+        addressElem.classList.remove('has-card');
+      }
+      updateCalculations();
+    }
+
+    function maskAccount(acc) {
+      if (!acc) return '';
+      const str = String(acc).trim();
+      if (str.length < 8) return str;
+      return str.substring(0, 4) + '****' + str.substring(str.length - 4);
+    }
+
+    function updateCalculations() {
+      const grossAmount = parseFloat(document.getElementById('withdraw-amount').value) || 0;
+      const rawChannel = activeCard ? String(activeCard.channel || activeCard.bankName || activeCard.bank_name || activeCard.bank || activeCard.network || activeCard.method || 'MTN').toUpperCase() : 'MTN';
+
+      const fee = grossAmount * 0.05;
+      document.getElementById('fee-display').textContent = fee > 0 ? fee.toFixed(2) : '0.00';
+
+      const displayElem = document.getElementById('conversion-display');
+      if (rawChannel.includes("USDT")) {
+        const dollars = (grossAmount / 12.5).toFixed(2);
+        displayElem.textContent = `≈${dollars} USDT`;
+      } else {
+        let networkName = "MTN";
+        if (rawChannel.includes("TELECEL") || rawChannel.includes("VODAFONE")) networkName = "TELECEL";
+        if (rawChannel.includes("AT")) networkName = "AT";
+        
+        displayElem.textContent = `≈${grossAmount.toFixed(2)} ${networkName}`;
+      }
+    }
+
+    function notifyUser(msg, type = 'info') {
+      if (typeof showToast === 'function') {
+        showToast(msg, type);
+      } else {
+        alert(msg);
+      }
+    }
+
+    async function handleWithdrawal() {
+      const submitBtn = document.getElementById('submit-btn');
+      if (submitBtn.disabled) return;
+
+      const account = activeCard ? (activeCard.account_number || activeCard.accountNumber || activeCard.account || activeCard.bankCardNumber || activeCard.phone || activeCard.address) : null;
+
+      if (!activeCard || !account) {
+        notifyUser("Please bind a withdrawal card first.", "warning");
+        setTimeout(() => {
+          window.location.href = 'bankcard.html';
+        }, 1200);
+        return;
+      }
+
+      const amount = parseFloat(document.getElementById('withdraw-amount').value) || 0;
+      const password = document.getElementById('fund-password').value.trim();
+
+      if (!amount || amount <= 0) {
+        notifyUser("Please enter a valid withdrawal amount.", "warning");
+        return;
+      }
+
+      const pinRegex = /^\d{4,6}$/;
+      if (!password) {
+        notifyUser("Please enter your fund password.", "warning");
+        return;
+      }
+      if (!pinRegex.test(password)) {
+        notifyUser("Fund password must be 4 to 6 numeric digits.", "warning");
+        return;
+      }
+
+      const currentBalance = parseFloat(document.getElementById('display-balance').textContent) || 0;
+      if (amount > currentBalance) {
+        notifyUser("Insufficient balance for this withdrawal.", "error");
+        return;
+      }
+
+      const fee = amount * 0.05;
+      const netToReceive = amount - fee;
+      const method = activeCard.channel || activeCard.bankName || activeCard.bank_name || activeCard.bank || activeCard.network || activeCard.method || 'MTN';
+
+      const payload = {
+        amount: amount,
+        handlingFee: fee,
+        netAmountToReceive: netToReceive,
+        method: method,
+        accountDetails: account,
+        accountNumber: account,
+        fundPassword: password,
+        password: password
+      };
+
+      // Instantly lock button to prevent double-clicks/spam
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Submitting...';
+
+      const token = localStorage.getItem('token') || localStorage.getItem('userToken');
+      const baseUrl = resolveBaseUrl();
+
+      const endpoints = [
+        `pep-back-production.up.railway.app/api/withdraw/request`,
+        `pep-back-production.up.railway.app/api/withdraw/submit`,
+        `pep-back-production.up.railway.app/api/user/withdraw`,
+        `pep-back-production.up.railway.app/api/wallet/withdraw`
+      ];
+
+      let success = false;
+      let responseData = null;
+
+      for (const endpoint of endpoints) {
+        try {
+          const response = await fetch(endpoint, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': token ? `Bearer ${token}` : ''
+            },
+            body: JSON.stringify(payload)
+          });
+
+          if (response.status !== 404) {
+            try {
+              responseData = await response.json();
+            } catch (err) {
+              responseData = {};
+            }
+
+            if (response.ok && (responseData.success || responseData.status === 'success' || response.status === 200)) {
+              success = true;
+              break;
+            } else if (responseData.message) {
+              notifyUser(responseData.message, "error");
+              submitBtn.disabled = false;
+              submitBtn.textContent = 'Submit';
+              return;
+            }
+          }
+        } catch (err) {
+          console.error(`Failed request to ${endpoint}:`, err);
+        }
+      }
+
+      if (success) {
+        notifyUser(responseData?.message || "Withdrawal submitted successfully!", "success");
+        setTimeout(() => {
+          window.location.href = 'wrec.html';
+        }, 1200);
+      } else {
+        notifyUser("Withdrawal request failed. Please try again.", "error");
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Submit';
+      }
+    }
+  </script>
+</body>
+</html>

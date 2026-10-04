@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Account - VF Life</title>
+
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#0047ab">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="apple-touch-icon" href="pepsi-logo.png">
+
+  <!-- Font Awesome for Bottom Nav Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    /* Reset and Base Styles */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background-color: #f7f7f7;
+      color: #333;
+      padding-bottom: 75px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    /* Central Mobile Shell Container */
+    .app-container {
+      width: 100%;
+      max-width: 480px;
+      position: relative;
+      background-color: #f7f7f7;
+      min-height: 100vh;
+      box-shadow: 0 0 20px rgba(0,0,0,0.05);
+    }
+
+    /* 1. Header Area */
+    .header-panel {
+      background: linear-gradient(135deg, #60a5fa, #8279b6fa);
+      padding: 20px 16px 65px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: relative;
+    }
+
+    .user-profile {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .avatar-wrapper {
+      position: relative;
+      cursor: pointer;
+    }
+
+    .avatar {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      border: 2px solid #ffffff;
+      object-fit: cover;
+      background-color: #eee;
+      transition: transform 0.2s;
+    }
+
+    .avatar-wrapper:hover .avatar {
+      transform: scale(1.05);
+    }
+
+    .edit-badge {
+      position: absolute;
+      bottom: 0;
+      right: 0;
+      background: #2563eb;
+      color: white;
+      font-size: 9px;
+      padding: 2px 4px;
+      border-radius: 50%;
+      border: 1px solid #fff;
+    }
+
+    .user-name {
+      color: #ffffff;
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: -0.2px;
+    }
+
+    .vip-tag {
+      background: linear-gradient(135deg, #ffc875, #ffaa3b);
+      color: #ffffff;
+      font-size: 12px;
+      font-weight: 700;
+      font-style: italic;
+      padding: 3px 12px;
+      border-radius: 20px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.12);
+    }
+
+    /* 2. Dashboard Grid Card */
+    .dashboard-card {
+      background: #ffffff;
+      width: calc(100% - 32px);
+      margin: -45px auto 16px auto;
+      border-radius: 16px;
+      padding: 20px 14px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
+      position: relative;
+      z-index: 10;
+    }
+
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      row-gap: 20px;
+      column-gap: 12px;
+    }
+
+    .metric-box {
+      text-align: center;
+    }
+
+    .metric-val {
+      font-size: 18px;
+      font-weight: 700;
+      color: #2d3748;
+      margin-bottom: 2px;
+    }
+
+    .metric-label {
+      font-size: 12px;
+      color: #94a3b8;
+      font-weight: 400;
+    }
+
+    /* 3. Navigation List Groups */
+    .list-group {
+      background: #ffffff;
+      width: calc(100% - 32px);
+      margin: 0 auto 12px auto;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
+    }
+
+    .list-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 14px 16px;
+      border-bottom: 1px solid #f1f5f9;
+      cursor: pointer;
+      text-decoration: none;
+      color: #333;
+    }
+
+    .list-item:last-child {
+      border-bottom: none;
+    }
+
+    .item-left {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .item-icon-img {
+      width: 22px;
+      height: 22px;
+      object-fit: contain;
+      filter: brightness(0) saturate(100%) invert(31%) sepia(87%) saturate(2250%) hue-rotate(212%) brightness(98%) contrast(93%);
+    }
+
+    .item-title {
+      font-size: 14px;
+      color: #334155;
+      font-weight: 500;
+    }
+
+    .chevron {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border-top: 2px solid #cbd5e1;
+      border-right: 2px solid #cbd5e1;
+      transform: rotate(45deg);
+      margin-right: 4px;
+    }
+
+    /* AVATAR MODAL PICKER */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.6);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 2000;
+      padding: 16px;
+    }
+
+    .modal-content {
+      background: #ffffff;
+      width: 100%;
+      max-width: 420px;
+      border-radius: 16px;
+      padding: 20px;
+      max-height: 85vh;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+
+    .modal-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: #1e293b;
+    }
+
+    .close-modal {
+      background: none;
+      border: none;
+      font-size: 20px;
+      cursor: pointer;
+      color: #64748b;
+    }
+
+    .avatar-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      overflow-y: auto;
+      padding: 4px;
+      max-height: 55vh;
+    }
+
+    .avatar-option {
+      width: 100%;
+      aspect-ratio: 1;
+      border-radius: 50%;
+      object-fit: cover;
+      cursor: pointer;
+      border: 3px solid transparent;
+      transition: all 0.2s;
+    }
+
+    .avatar-option:hover, .avatar-option.selected {
+      border-color: #3b82f6;
+      transform: scale(1.08);
+    }
+
+    /* BOTTOM NAVIGATION BAR */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 100%;
+      max-width: 480px;
+      background: #ffffff;
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      padding: 8px 0 6px 0;
+      border-top: 1px solid #e2e8f0;
+      z-index: 1000;
+    }
+
+    .nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-decoration: none;
+      color: #718096;
+      font-size: 11px;
+      flex: 1;
+    }
+
+    .nav-item i {
+      font-size: 18px;
+      margin-bottom: 3px;
+    }
+
+    .nav-item.active {
+      color: #df7378;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="app-container">
+    <!-- 1. Header -->
+    <div class="header-panel">
+      <div class="user-profile">
+        <div class="avatar-wrapper" onclick="openAvatarModal()" title="Change Avatar">
+          <img id="display-avatar" class="avatar" src="meAvatar.jpg" alt="Avatar">
+          <div class="edit-badge"><i class="fa-solid fa-pen"></i></div>
+        </div>
+        <span id="display-phone" class="user-name">Guest User</span>
+      </div>
+      <span id="display-vip" class="vip-tag">LV 0</span>
+    </div>
+
+    <!-- 2. Dashboard Card -->
+    <div class="dashboard-card">
+      <div class="metrics-grid">
+        <div class="metric-box">
+          <div id="val-balance" class="metric-val">0.00</div>
+          <div class="metric-label">Balance</div>
+        </div>
+        <div class="metric-box">
+          <div id="val-yesterday" class="metric-val">0.00</div>
+          <div class="metric-label">Yesterday's earnings</div>
+        </div>
+        <div class="metric-box">
+          <div id="val-investment" class="metric-val">0.00</div>
+          <div class="metric-label">Investment benefits</div>
+        </div>
+        <div class="metric-box">
+          <div id="val-today" class="metric-val">0.00</div>
+          <div class="metric-label">Today's earnings</div>
+        </div>
+        <div class="metric-box">
+          <div id="val-team" class="metric-val">0.00</div>
+          <div class="metric-label">Team benefits</div>
+        </div>
+        <div class="metric-box">
+          <div id="val-week" class="metric-val">0.00</div>
+          <div class="metric-label">This week's earnings</div>
+        </div>
+        <div class="metric-box">
+          <div id="val-referral" class="metric-val">0.00</div>
+          <div class="metric-label">Referral rebate</div>
+        </div>
+        <div class="metric-box">
+          <div id="val-month" class="metric-val">0.00</div>
+          <div class="metric-label">This month's earnings</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3. Records Group -->
+    <div class="list-group">
+      <a href="accounting.html" class="list-item">
+        <div class="item-left">
+          <img src="https://cdn-icons-png.flaticon.com/512/1052/1052858.png" alt="Accounting" class="item-icon-img">
+          <span class="item-title">Accounting records</span>
+        </div>
+        <span class="chevron"></span>
+      </a>
+      <a href="recrec.html" class="list-item">
+        <div class="item-left">
+          <img src="https://cdn-icons-png.flaticon.com/512/214/214362.png" alt="Recharge" class="item-icon-img">
+          <span class="item-title">Recharge record</span>
+        </div>
+        <span class="chevron"></span>
+      </a>
+      <a href="wrec.html" class="list-item">
+        <div class="item-left">
+          <img src="https://cdn-icons-png.flaticon.com/512/1682/1682308.png" alt="Withdrawal" class="item-icon-img">
+          <span class="item-title">Withdrawal record</span>
+        </div>
+        <span class="chevron"></span>
+      </a>
+    </div>
+
+    <!-- 4. Account Settings Group -->
+    <div class="list-group">
+      <a href="bankcard.html" class="list-item">
+        <div class="item-left">
+          <img src="https://cdn-icons-png.flaticon.com/512/633/633619.png" alt="Bank Card" class="item-icon-img">
+          <span class="item-title">Bank card</span>
+        </div>
+        <span class="chevron"></span>
+      </a>
+      <a href="yf-life fund.html" class="list-item">
+        <div class="item-left">
+          <img src="https://cdn-icons-png.flaticon.com/512/2953/2953361.png" alt="Fund" class="item-icon-img">
+          <span class="item-title">Wealth management</span>
+        </div>
+        <span class="chevron"></span>
+      </a>
+    </div>
+
+    <!-- 5. Main Actions Group -->
+    <div class="list-group">
+      <a href="profit.html" class="list-item">
+        <div class="item-left">
+          <img src="https://cdn-icons-png.flaticon.com/512/4285/4285670.png" alt="Profit" class="item-icon-img">
+          <span class="item-title">Profit</span>
+        </div>
+        <span class="chevron"></span>
+      </a>
+      <a href="fund passwd.html" class="list-item">
+        <div class="item-left">
+          <img src="https://cdn-icons-png.flaticon.com/512/3064/3064155.png" alt="Fund Password" class="item-icon-img">
+          <span class="item-title">Fund Password</span>
+        </div>
+        <span class="chevron"></span>
+      </a>
+      <a href="invite.html" class="list-item">
+        <div class="item-left">
+          <img src="https://cdn-icons-png.flaticon.com/512/3126/3126647.png" alt="Invite" class="item-icon-img">
+          <span class="item-title">Invite friends</span>
+        </div>
+        <span class="chevron"></span>
+      </a>
+      <a href="change passwd.html" class="list-item">
+        <div class="item-left">
+          <img src="https://cdn-icons-png.flaticon.com/512/2889/2889676.png" alt="Account Password" class="item-icon-img">
+          <span class="item-title">My Account</span>
+        </div>
+        <span class="chevron"></span>
+      </a>
+      <a href="about.html" class="list-item">
+        <div class="item-left">
+          <img src="https://cdn-icons-png.flaticon.com/512/471/471662.png" alt="About" class="item-icon-img">
+          <span class="item-title">About us</span>
+        </div>
+        <span class="chevron"></span>
+      </a>
+      <a href="javascript:void(0)" onclick="handleLogout()" class="list-item">
+        <div class="item-left">
+          <img src="https://cdn-icons-png.flaticon.com/512/1286/1286853.png" alt="Log Out" class="item-icon-img">
+          <span class="item-title" style="color: #ef4444; font-weight: 600;">Log Out</span>
+        </div>
+        <span class="chevron"></span>
+      </a>
+    </div>
+
+    <!-- 6. Bottom Navigation Bar -->
+    <div class="bottom-nav">
+      <a href="home.html" class="nav-item">
+        <i class="fa-solid fa-house"></i>
+        <span>Home</span>
+      </a>
+      <a href="invite.html" class="nav-item">
+        <i class="fa-solid fa-user-group"></i>
+        <span>Team</span>
+      </a>
+      <a href="device.html" class="nav-item">
+        <i class="fa-solid fa-headset"></i>
+        <span>Device</span>
+      </a>
+      <a href="profit.html" class="nav-item">
+        <i class="fa-solid fa-chart-column"></i>
+        <span>Profit</span>
+      </a>
+      <a href="me.html" class="nav-item active">
+        <i class="fa-solid fa-user"></i>
+        <span>My</span>
+      </a>
+    </div>
+  </div>
+
+  <!-- AVATAR SELECTION MODAL -->
+  <div id="avatarModal" class="modal-overlay">
+    <div class="modal-content">
+      <div class="modal-header">
+        <span class="modal-title">Choose your Avatar</span>
+        <button class="close-modal" onclick="closeAvatarModal()">&times;</button>
+      </div>
+      <div class="avatar-grid" id="avatarGridContainer">
+        <!-- Avatars will be injected dynamically -->
+      </div>
+    </div>
+  </div>
+
+  <script src="config.js"></script>
+  <script src="auth-guard.js"></script>
+  <script src="toast.js"></script>
+  
+  <script>
+    const availableAvatars = [
+      'meAvatar.jpg',
+      'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150',
+      'https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?w=150',
+      'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150',
+      'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150',
+      'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150',
+      'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150',
+      'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150'
+    ];
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const token = localStorage.getItem('userToken') || localStorage.getItem('token');
+      
+      if (!token) {
+        window.location.href = 'welcome.html';
+        return;
+      }
+
+      buildAvatarGrid();
+      fetchUserProfile(token);
+    });
+
+    function buildAvatarGrid() {
+      const container = document.getElementById('avatarGridContainer');
+      container.innerHTML = '';
+      const currentAvatar = localStorage.getItem('userAvatar') || 'meAvatar.jpg';
+
+      availableAvatars.forEach(avatarSrc => {
+        const img = document.createElement('img');
+        img.src = avatarSrc;
+        img.className = `avatar-option ${currentAvatar === avatarSrc ? 'selected' : ''}`;
+        img.onclick = () => selectNewAvatar(avatarSrc);
+        container.appendChild(img);
+      });
+    }
+
+    function openAvatarModal() {
+      document.getElementById('avatarModal').style.display = 'flex';
+    }
+
+    function closeAvatarModal() {
+      document.getElementById('avatarModal').style.display = 'none';
+    }
+
+    async function selectNewAvatar(avatarSrc) {
+      const token = localStorage.getItem('userToken') || localStorage.getItem('token');
+      const baseUrl = typeof API_BASE_URL !== 'undefined' ? API_BASE_URL : 'https://backend-production-7c73b.up.railway.app';
+
+      try {
+        const res = await fetch(`https://backend-production-7c73b.up.railway.app/api/user/update-avatar`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ avatar: avatarSrc })
+        });
+
+        const data = await res.json();
+        if (data.success) {
+          localStorage.setItem('userAvatar', avatarSrc);
+          document.getElementById('display-avatar').src = avatarSrc;
+          if (typeof showToast === 'function') {
+            showToast('Avatar updated successfully!', 'success');
+          }
+          closeAvatarModal();
+          buildAvatarGrid();
+        } else {
+          if (typeof showToast === 'function') showToast(data.message || 'Failed to update avatar', 'error');
+        }
+      } catch (err) {
+        console.error('Error updating avatar:', err);
+        localStorage.setItem('userAvatar', avatarSrc);
+        document.getElementById('display-avatar').src = avatarSrc;
+        closeAvatarModal();
+        buildAvatarGrid();
+      }
+    }
+
+    async function fetchUserProfile(token) {
+      updateDisplayFromLocal();
+
+      const headers = {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      };
+
+      try {
+        const [profileRes, summaryRes] = await Promise.all([
+          fetch('https://backend-production-7c73b.up.railway.app/api/user/profile', { headers }),
+          fetch('https://backend-production-7c73b.up.railway.app/api/user/account-summary', { headers })
+        ]);
+
+        if (profileRes.status === 401 || profileRes.status === 403 || summaryRes.status === 401 || summaryRes.status === 403) {
+          handleLogout();
+          return;
+        }
+
+        if (profileRes.ok) {
+          const profileData = await profileRes.json();
+          // Support various response structures (direct properties, nested data object, or user object)
+          const p = profileData.data || profileData.user || profileData;
+          if (profileData.success || p) {
+            const identifier = p.phone || p.username || p.account_number || p.email;
+            if (identifier) {
+              const phoneElem = document.getElementById('display-phone');
+              if (phoneElem) phoneElem.textContent = identifier;
+              localStorage.setItem('userPhone', identifier);
+            }
+
+            if (p.avatar) {
+              const avatarElem = document.getElementById('display-avatar');
+              if (avatarElem) avatarElem.src = p.avatar;
+              localStorage.setItem('userAvatar', p.avatar);
+            }
+
+            const liveVipLevel = p.vipLevel ?? p.vip_level ?? 0;
+            const vipElem = document.getElementById('display-vip');
+            if (vipElem) vipElem.textContent = `LV ${liveVipLevel}`;
+            localStorage.setItem('userVipLevel', liveVipLevel);
+          }
+        }
+
+        if (summaryRes.ok) {
+          const summaryData = await summaryRes.json();
+          const payload = summaryData.data || summaryData;
+
+          if (summaryData.success || payload) {
+            updateStat('val-balance', payload.balance, 'val_balance', 2);
+            updateStat('val-yesterday', payload.yesterdayEarnings, 'val_yesterday', 2);
+            updateStat('val-investment', payload.investmentBenefits, 'val_investment', 2);
+            updateStat('val-today', payload.todayEarnings, 'val_today', 2);
+            updateStat('val-team', payload.teamBenefits, 'val_team', 2);
+            updateStat('val-week', payload.thisWeekEarnings, 'val_week', 2);
+            updateStat('val-referral', payload.referralRebate, 'val_referral', 2);
+            updateStat('val-month', payload.thisMonthEarnings, 'val_month', 2);
+          }
+        }
+      } catch (err) {
+        console.warn("API offline or unreachable, serving local cache");
+      }
+    }
+
+    function updateStat(elementId, val, storageKey, decimals = 2) {
+      if (val !== undefined && val !== null) {
+        const num = parseFloat(val) || 0;
+        const elem = document.getElementById(elementId);
+        if (elem) elem.textContent = num.toFixed(decimals);
+        localStorage.setItem(storageKey, num.toString());
+      }
+    }
+
+    function updateDisplayFromLocal() {
+      const cachedVip = localStorage.getItem('userVipLevel') || '0';
+      const vipElem = document.getElementById('display-vip');
+      if (vipElem) vipElem.textContent = `LV ${cachedVip}`;
+
+      const cachedPhone = localStorage.getItem('userPhone');
+      const phoneElem = document.getElementById('display-phone');
+      if (cachedPhone && phoneElem) phoneElem.textContent = cachedPhone;
+
+      const cachedAvatar = localStorage.getItem('userAvatar');
+      const avatarElem = document.getElementById('display-avatar');
+      if (cachedAvatar && avatarElem) avatarElem.src = cachedAvatar;
+
+      setLocalText('val-balance', 'val_balance', 2);
+      setLocalText('val-yesterday', 'val_yesterday', 2);
+      setLocalText('val-investment', 'val_investment', 2);
+      setLocalText('val-today', 'val_today', 2);
+      setLocalText('val-team', 'val_team', 2);
+      setLocalText('val-week', 'val_week', 2);
+      setLocalText('val-referral', 'val_referral', 2);
+      setLocalText('val-month', 'val_month', 2);
+    }
+
+    function setLocalText(elementId, storageKey, decimals) {
+      const elem = document.getElementById(elementId);
+      if (elem) {
+        elem.textContent = (parseFloat(localStorage.getItem(storageKey)) || 0.00).toFixed(decimals);
+      }
+    }
+
+    function handleLogout() {
+      if (typeof showToast === 'function') {
+        showToast('Logging out...', 'info');
+      }
+      setTimeout(() => {
+        localStorage.clear();
+        window.location.href = 'login.html';
+      }, 500);
+    }
+  </script>
+</body>
+</html>

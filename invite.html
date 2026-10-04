@@ -1,0 +1,772 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Team Reports - Pepsi VIP</title>
+
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#0047ab">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="apple-touch-icon" href="pepsi-logo.png">
+
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('sw.js')
+          .then(reg => console.log('Service Worker registered!'))
+          .catch(err => console.log('Service Worker registration failed', err));
+      });
+    }
+  </script>
+
+  <!-- QRCode.js Library for high-definition canvas QR code generation -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <!-- Font Awesome for Bottom Nav Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    body {
+      background-color: #f7f9fa;
+      color: #333333;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      overflow-x: hidden;
+      padding-bottom: 75px;
+    }
+
+    .app-container {
+      width: 100%;
+      max-width: 480px;
+      min-height: 100vh;
+      background: #f4f6f9;
+      position: relative;
+    }
+
+    /* Top Header Bar */
+    .team-header {
+      background-color: #5541ca;
+      color: #ffffff;
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .user-profile {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background-color: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    .avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .header-title {
+      font-size: 0.95rem;
+      font-weight: 700;
+    }
+
+    .header-tab {
+      font-size: 0.85rem;
+      color: rgba(255, 255, 255, 0.8);
+      font-weight: 500;
+      cursor: pointer;
+    }
+
+    /* Main Content Container */
+    .content-box {
+      padding: 12px;
+    }
+
+    /* Date Filter Controls */
+    .filter-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 12px;
+      background: #ffffff;
+      padding: 8px;
+      border-radius: 6px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+    }
+
+    .date-input {
+      flex: 1;
+      padding: 6px 4px;
+      border: 1px solid #e2e8f0;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      color: #333333;
+      text-align: center;
+      outline: none;
+    }
+
+    .separator {
+      color: #a0aec0;
+      font-weight: bold;
+    }
+
+    .search-btn {
+      background-color: #1890ff;
+      color: #ffffff;
+      border: none;
+      padding: 6px 14px;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    /* Grid for Metrics */
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+
+    .metric-card {
+      border-radius: 8px;
+      padding: 10px 4px;
+      text-align: center;
+      color: #ffffff;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-height: 75px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+    }
+
+    .metric-blue {
+      background-color: #2b85e4;
+    }
+
+    .metric-green {
+      background-color: #2dca93;
+    }
+
+    .metric-title {
+      font-size: 0.65rem;
+      line-height: 1.1;
+      font-weight: 500;
+      opacity: 0.95;
+    }
+
+    .metric-value {
+      font-size: 1.05rem;
+      font-weight: 700;
+      margin-top: 4px;
+    }
+
+    /* Orange Level Tabs Header */
+    .level-tabs-header {
+      background-color: #ff9800;
+      border-radius: 8px 8px 0 0;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      text-align: center;
+      margin-top: 14px;
+    }
+
+    .level-tab {
+      padding: 8px 0;
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: #ffffff;
+      cursor: pointer;
+    }
+
+    .level-tab.active {
+      background-color: rgba(0, 0, 0, 0.15);
+      border-bottom: 3px solid #ffffff;
+    }
+
+    /* Level Details Card */
+    .level-details-card {
+      background: #fffdf5;
+      border: 1px solid #ffe0b2;
+      border-top: none;
+      border-radius: 0 0 8px 8px;
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      text-align: center;
+      padding: 14px 4px;
+      margin-bottom: 12px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+    }
+
+    .detail-item {
+      border-right: 1px solid #ffe0b2;
+    }
+
+    .detail-item:last-child {
+      border-right: none;
+    }
+
+    .detail-label {
+      font-size: 0.7rem;
+      font-weight: 600;
+      color: #333333;
+      margin-bottom: 4px;
+    }
+
+    .detail-value {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: #333333;
+    }
+
+    /* Commission Structure Grid */
+    .commission-box {
+      background: #ffffff;
+      border-radius: 8px;
+      padding: 12px;
+      margin-bottom: 12px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+    }
+
+    .commission-title {
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: #1a202c;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+    }
+
+    .commission-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 6px;
+      text-align: center;
+    }
+
+    .commission-card {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 6px;
+      padding: 8px 4px;
+    }
+
+    .comm-level {
+      font-size: 0.7rem;
+      color: #718096;
+      font-weight: 600;
+    }
+
+    .comm-rate {
+      font-size: 0.95rem;
+      font-weight: 800;
+      color: #ff5252;
+      margin-top: 2px;
+    }
+
+    /* QR Code Card Section */
+    .qr-box {
+      background: #ffffff;
+      border-radius: 8px;
+      padding: 16px;
+      margin-bottom: 12px;
+      text-align: center;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .qr-container {
+      background: #ffffff;
+      padding: 10px;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      display: inline-block;
+      margin: 10px 0;
+    }
+
+    .save-qr-btn {
+      background-color: #2dca93;
+      color: #ffffff;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 6px;
+      font-weight: 700;
+      font-size: 0.75rem;
+      cursor: pointer;
+      margin-top: 4px;
+    }
+
+    .save-qr-btn:active {
+      background-color: #229e73;
+    }
+
+    /* Invitation Link Box */
+    .invite-box {
+      background: #ffffff;
+      border-radius: 8px;
+      padding: 14px;
+      color: #333333;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+    }
+
+    .ref-code-wrapper {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: #f8fafc;
+      padding: 8px 12px;
+      border: 1px dashed #cbd5e0;
+      border-radius: 6px;
+      margin-bottom: 10px;
+    }
+
+    .ref-code-display {
+      font-size: 0.8rem;
+      color: #4a5568;
+    }
+
+    .ref-code-display span {
+      font-weight: 800;
+      color: #ff5252;
+      font-size: 0.95rem;
+      letter-spacing: 0.5px;
+    }
+
+    .copy-code-btn {
+      background: #edf2f7;
+      border: 1px solid #cbd5e0;
+      padding: 4px 10px;
+      border-radius: 4px;
+      font-size: 0.7rem;
+      font-weight: 700;
+      color: #2d3748;
+      cursor: pointer;
+    }
+
+    .link-wrapper {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .invite-input {
+      flex: 1;
+      padding: 8px;
+      border: 1px solid #cbd5e0;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      color: #4a5568;
+      background: #edf2f7;
+      outline: none;
+    }
+
+    .copy-btn {
+      background-color: #ff5722;
+      color: #ffffff;
+      border: none;
+      padding: 8px 14px;
+      border-radius: 6px;
+      font-weight: 700;
+      font-size: 0.75rem;
+      cursor: pointer;
+    }
+
+    /* UNIFORM BOTTOM NAVIGATION BAR */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 100%;
+      max-width: 480px;
+      background: #ffffff;
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      padding: 8px 0 6px 0;
+      border-top: 1px solid #e2e8f0;
+      z-index: 1000;
+    }
+
+    .nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-decoration: none;
+      color: #718096;
+      font-size: 11px;
+      flex: 1;
+    }
+
+    .nav-item i {
+      font-size: 18px;
+      margin-bottom: 3px;
+    }
+
+    .nav-item.active {
+      color: #df7378;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="app-container">
+
+    <!-- Top Red Header Bar -->
+    <div class="team-header">
+      <div class="user-profile">
+        <div class="avatar">
+          <img id="userAvatar" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100&q=80" alt="Avatar">
+        </div>
+        <span class="header-title">Team Reports</span>
+      </div>
+      <span class="header-tab">My team</span>
+    </div>
+
+    <div class="content-box">
+      <!-- Date Filter Controls -->
+      <div class="filter-row">
+        <input type="date" class="date-input" id="startDate">
+        <span class="separator">-</span>
+        <input type="date" class="date-input" id="endDate">
+        <button class="search-btn" onclick="fetchTeamMetrics()">Search</button>
+      </div>
+
+      <!-- Top Row Blue Cards -->
+      <div class="metrics-grid">
+        <div class="metric-card metric-blue">
+          <div class="metric-title">Team recharge(GHS)</div>
+          <div class="metric-value" id="teamRecharge">0.00</div>
+        </div>
+        <div class="metric-card metric-blue">
+          <div class="metric-title">Number of first charge()</div>
+          <div class="metric-value" id="firstChargeCount">0</div>
+        </div>
+        <div class="metric-card metric-blue">
+          <div class="metric-title">Team size()</div>
+          <div class="metric-value" id="teamSize">0</div>
+        </div>
+      </div>
+
+      <!-- Second Row Green Cards -->
+      <div class="metrics-grid">
+        <div class="metric-card metric-green">
+          <div class="metric-title">Team withdraw(GHS)</div>
+          <div class="metric-value" id="teamWithdraw">0.00</div>
+        </div>
+        <div class="metric-card metric-green">
+          <div class="metric-title">Number of first push()</div>
+          <div class="metric-value" id="firstPushCount">0</div>
+        </div>
+        <div class="metric-card metric-green">
+          <div class="metric-title">New team()</div>
+          <div class="metric-value" id="newTeamCount">0</div>
+        </div>
+      </div>
+
+      <!-- Orange Level Navigation Header -->
+      <div class="level-tabs-header">
+        <div class="level-tab active" onclick="switchLevel(1, this)">Level 1</div>
+        <div class="level-tab" onclick="switchLevel(2, this)">Level 2</div>
+        <div class="level-tab" onclick="switchLevel(3, this)">Level 3</div>
+      </div>
+
+      <!-- Level Details Display -->
+      <div class="level-details-card">
+        <div class="detail-item">
+          <div class="detail-label">Recharge amount(GHS)</div>
+          <div class="detail-value" id="rechargeAmount">0.00</div>
+        </div>
+        <div class="detail-item">
+          <div class="detail-label">Recharge Number()</div>
+          <div class="detail-value" id="rechargeNumber">0</div>
+        </div>
+      </div>
+
+      <!-- Team Commission Structure -->
+      <div class="commission-box">
+        <div class="commission-title">Referral Rebate Rates</div>
+        <div class="commission-grid">
+          <div class="commission-card">
+            <div class="comm-level">Level 1</div>
+            <div class="comm-rate">10%</div>
+          </div>
+          <div class="commission-card">
+            <div class="comm-level">Level 2</div>
+            <div class="comm-rate">3%</div>
+          </div>
+          <div class="commission-card">
+            <div class="comm-level">Level 3</div>
+            <div class="comm-rate">1%</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- QR Code Section -->
+      <div class="qr-box">
+        <div class="commission-title">Invitation QR Code</div>
+        <div class="qr-container" id="qrcode"></div>
+        <button class="save-qr-btn" onclick="saveQRCode()">Save to Gallery</button>
+      </div>
+
+      <!-- Referral Link Box -->
+      <div class="invite-box">
+        <div class="commission-title">Invitation Link</div>
+        <div class="ref-code-wrapper">
+          <div class="ref-code-display">My Referral Code: <span id="displayRefCode">------</span></div>
+          <button class="copy-code-btn" onclick="copyCode()">Copy Code</button>
+        </div>
+        <div class="link-wrapper">
+          <input type="text" id="referralLink" class="invite-input" value="Generating link..." readonly />
+          <button class="copy-btn" onclick="copyLink()">Copy Link</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bottom Navigation Bar -->
+    <div class="bottom-nav">
+      <a href="home.html" class="nav-item">
+        <i class="fa-solid fa-house"></i>
+        <span>Home</span>
+      </a>
+      <a href="invite.html" class="nav-item active">
+        <i class="fa-solid fa-user-group"></i>
+        <span>Team</span>
+      </a>
+      <a href="device.html" class="nav-item">
+        <i class="fa-solid fa-headset"></i>
+        <span>Device</span>
+      </a>
+      <a href="profit.html" class="nav-item">
+        <i class="fa-solid fa-chart-column"></i>
+        <span>Profit</span>
+      </a>
+      <a href="me.html" class="nav-item">
+        <i class="fa-solid fa-user"></i>
+        <span>My</span>
+      </a>
+    </div>
+  </div>
+
+  <script src="config.js"></script>
+  <script src="auth-guard.js"></script>
+  <script src="toast.js"></script>
+
+  <script>
+    let teamDataCache = null;
+    let currentSelectedLevel = 1;
+
+    function formatDateToYYYYMMDD(dateObj) {
+      const year = dateObj.getFullYear();
+      const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+      const day = String(dateObj.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    }
+
+    function setupDefaultDateRange(userRegDate) {
+      const today = new Date();
+      document.getElementById('endDate').value = formatDateToYYYYMMDD(today);
+
+      if (userRegDate) {
+        const regDate = new Date(userRegDate);
+        if (!isNaN(regDate.getTime())) {
+          document.getElementById('startDate').value = formatDateToYYYYMMDD(regDate);
+          return;
+        }
+      }
+      
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(today.getDate() - 30);
+      document.getElementById('startDate').value = formatDateToYYYYMMDD(thirtyDaysAgo);
+    }
+
+    // Load referral code from the backend /api/user/referral-info route
+    async function loadUserProfileAndTeam() {
+      const token = localStorage.getItem('token') || localStorage.getItem('userToken');
+      const baseUrl = typeof API_BASE_URL !== 'undefined' ? API_BASE_URL : 'pep-back-production.up.railway.app';
+
+      let refCode = null;
+
+      try {
+        const response = await fetch(`${baseUrl}/api/user/referral-info`, {
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': token ? `Bearer ${token}` : ''
+          }
+        });
+
+        if (response.ok) {
+          const result = await response.json();
+          if (result.success && result.data) {
+            refCode = result.data.referralCode;
+          }
+        }
+      } catch (err) {
+        console.warn("Backend /api/user/referral-info call failed, checking local storage.", err);
+      }
+
+      if (!refCode) {
+        refCode = localStorage.getItem('referral_code') || localStorage.getItem('referralCode');
+      }
+
+      refCode = refCode || '849201';
+
+      renderQRCodeAndLink(refCode);
+      fetchTeamMetrics();
+    }
+
+    function renderQRCodeAndLink(code) {
+      document.getElementById('displayRefCode').innerText = code;
+      const baseDomain = window.location.origin + window.location.pathname.replace('invite.html', 'auth.html');
+      const fullReferralUrl = `${baseDomain}?ref=${code}`;
+
+      document.getElementById('referralLink').value = fullReferralUrl;
+
+      const qrElem = document.getElementById("qrcode");
+      if (qrElem) {
+        qrElem.innerHTML = "";
+        new QRCode(qrElem, {
+          text: fullReferralUrl,
+          width: 140,
+          height: 140,
+          colorDark: "#000000",
+          colorLight: "#ffffff",
+          correctLevel: QRCode.CorrectLevel.H
+        });
+      }
+    }
+
+    async function fetchTeamMetrics() {
+      const token = localStorage.getItem('token') || localStorage.getItem('userToken');
+      const startDateVal = document.getElementById('startDate').value;
+      const endDateVal = document.getElementById('endDate').value;
+      const baseUrl = typeof API_BASE_URL !== 'undefined' ? API_BASE_URL : 'pep-back-production.up.railway.app';
+
+      if (!startDateVal || !endDateVal) return;
+
+      try {
+        const endpointUrl = `${baseUrl}/api/team/report?startDate=${encodeURIComponent(startDateVal)}&endDate=${encodeURIComponent(endDateVal)}`;
+        
+        const response = await fetch(endpointUrl, {
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': token ? `Bearer ${token}` : ''
+          }
+        });
+
+        if (response.status === 401 || response.status === 403) {
+          localStorage.removeItem('token');
+          localStorage.removeItem('userToken');
+          window.location.href = 'welcome.html';
+          return;
+        }
+
+        if (response.ok) {
+          const data = await response.json();
+          if (data) {
+            teamDataCache = data;
+            populateMetrics(data);
+            return;
+          }
+        }
+      } catch (err) {
+        console.warn("Team report API endpoint not reachable yet, using empty metrics view.", err);
+      }
+
+      populateMetrics({
+        teamRecharge: 0, firstChargeCount: 0, teamSize: 0,
+        teamWithdraw: 0, firstPushCount: 0, newTeamCount: 0,
+        levels: { 1: {rechargeAmount: 0, rechargeNumber: 0}, 2: {rechargeAmount: 0, rechargeNumber: 0}, 3: {rechargeAmount: 0, rechargeNumber: 0} }
+      });
+    }
+
+    function populateMetrics(data) {
+      document.getElementById('teamRecharge').innerText = parseFloat(data.teamRecharge || data.team_recharge || 0).toFixed(2);
+      document.getElementById('firstChargeCount').innerText = parseInt(data.firstChargeCount || data.first_charge_count || 0, 10);
+      document.getElementById('teamSize').innerText = parseInt(data.teamSize || data.team_size || 0, 10);
+      document.getElementById('teamWithdraw').innerText = parseFloat(data.teamWithdraw || data.team_withdraw || 0).toFixed(2);
+      document.getElementById('firstPushCount').innerText = parseInt(data.firstPushCount || data.first_push_count || 0, 10);
+      document.getElementById('newTeamCount').innerText = parseInt(data.newTeamCount || data.new_team_count || 0, 10);
+
+      renderLevelDetails(currentSelectedLevel);
+    }
+
+    function renderLevelDetails(level) {
+      if (!teamDataCache || !teamDataCache.levels || !teamDataCache.levels[level]) {
+        document.getElementById('rechargeAmount').innerText = '0.00';
+        document.getElementById('rechargeNumber').innerText = '0';
+        return;
+      }
+
+      const lvlData = teamDataCache.levels[level];
+      document.getElementById('rechargeAmount').innerText = parseFloat(lvlData.rechargeAmount || lvlData.recharge_amount || 0).toFixed(2);
+      document.getElementById('rechargeNumber').innerText = lvlData.rechargeNumber || lvlData.recharge_number || 0;
+    }
+
+    function switchLevel(level, element) {
+      currentSelectedLevel = level;
+      document.querySelectorAll('.level-tab').forEach(tab => tab.classList.remove('active'));
+      element.classList.add('active');
+      renderLevelDetails(level);
+    }
+
+    function copyCode() {
+      navigator.clipboard.writeText(document.getElementById("displayRefCode").innerText)
+        .then(() => showToast('Referral code copied!', 'success'));
+    }
+
+    function copyLink() {
+      navigator.clipboard.writeText(document.getElementById("referralLink").value)
+        .then(() => showToast('Invitation link copied!', 'success'));
+    }
+
+    function saveQRCode() {
+      const qrCanvas = document.querySelector("#qrcode canvas");
+      if (!qrCanvas) return;
+      const downloadLink = document.createElement("a");
+      downloadLink.href = qrCanvas.toDataURL("image/png");
+      downloadLink.download = "invitation_qr_code.png";
+      downloadLink.click();
+      showToast('QR Code saved!', 'success');
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      try {
+        const userData = JSON.parse(localStorage.getItem('userData'));
+        if (userData && (userData.createdAt || userData.registeredAt || userData.created_at)) {
+          setupDefaultDateRange(userData.createdAt || userData.registeredAt || userData.created_at);
+        } else {
+          setupDefaultDateRange(null);
+        }
+      } catch(e) {
+        setupDefaultDateRange(null);
+      }
+
+      loadUserProfileAndTeam();
+    });
+  </script>
+</body>
+</html>
