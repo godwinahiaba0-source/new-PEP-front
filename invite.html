@@ -604,27 +604,47 @@
     }
 
     // Load referral code directly from localStorage session data
+    // Helper function to decode JWT token payload safely
+    function parseJwt(token) {
+      try {
+        const base64Url = token.split('.')[1];
+        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+        const jsonPayload = decodeURIComponent(window.atob(base64).split('').map(function(c) {
+            return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+        }).join(''));
+        return JSON.parse(jsonPayload);
+      } catch (e) {
+        return null;
+      }
+    }
+
     async function loadUserProfileAndTeam() {
       let refCode = null;
 
-      try {
-        const userData = JSON.parse(localStorage.getItem('userData'));
-        if (userData) {
-          // Check various common property names for referral code
-          refCode = userData.referralCode || userData.referral_code || userData.code || userData.inviteCode;
-        }
-      } catch (e) {
-        console.warn("Could not read userData from localStorage", e);
-      }
+      // 1. Check direct standalone localStorage keys first
+      refCode = localStorage.getItem('referral_code') || localStorage.getItem('referralCode') || localStorage.getItem('code');
 
-      // Fallback to standalone keys if not inside userData object
+      // 2. If not found, check inside the JWT token (token / userToken)
       if (!refCode) {
-        refCode = localStorage.getItem('referral_code') || localStorage.getItem('referralCode') || localStorage.getItem('code');
+        const token = localStorage.getItem('token') || localStorage.getItem('userToken');
+        if (token) {
+          const decoded = parseJwt(token);
+          console.log("Decoded JWT Token:", decoded);
+          if (decoded) {
+            refCode = decoded.referralCode || decoded.referral_code || decoded.code || decoded.inviteCode || decoded.phone || decoded.username;
+          }
+        }
       }
 
-      // Final fallback placeholder if not found
+      // 3. Fallback to userPhone if no referral code is embedded
+      if (!refCode) {
+        refCode = localStorage.getItem('userPhone');
+      }
+
+      // Final fallback placeholder
       refCode = refCode || '------';
 
+      console.log("Final Resolved Referral Code/ID:", refCode);
       renderQRCodeAndLink(refCode);
       fetchTeamMetrics();
     }
