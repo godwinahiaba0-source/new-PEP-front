@@ -603,7 +603,7 @@
       document.getElementById('startDate').value = formatDateToYYYYMMDD(thirtyDaysAgo);
     }
 
-    // Load referral code from the backend /api/user/referral-info route
+    // Load referral code strictly from the database via /api/user/referral-info route
     async function loadUserProfileAndTeam() {
       const token = localStorage.getItem('token') || localStorage.getItem('userToken');
       const baseUrl = typeof API_BASE_URL !== 'undefined' ? API_BASE_URL : 'https://pep-back-production.up.railway.app';
@@ -625,14 +625,15 @@
           }
         }
       } catch (err) {
-        console.warn("Backend /api/user/referral-info call failed, checking local storage.", err);
+        console.warn("Backend /api/user/referral-info call failed.", err);
       }
 
       if (!refCode) {
         refCode = localStorage.getItem('referral_code') || localStorage.getItem('referralCode');
       }
 
-      refCode = refCode || '849201';
+      // Fallback safely to a placeholder if backend and local storage are both empty (no hardcoded fake codes)
+      refCode = refCode || '------';
 
       renderQRCodeAndLink(refCode);
       fetchTeamMetrics();
