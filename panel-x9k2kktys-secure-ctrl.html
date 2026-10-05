@@ -105,14 +105,12 @@
 </head>
 <body>
   <script>
-  // 1. Check if admin token exists on page load (Redirect to login if not authenticated)
   if (!localStorage.getItem('adminToken')) {
       window.location.href = 'admin-login.html';
   }
 
-  // 2. 5-Minute Inactivity Auto-Logout Logic
   let inactivityTimer;
-  const INACTIVITY_LIMIT = 5 * 60 * 1000; // 5 minutes in milliseconds (300,000 ms)
+  const INACTIVITY_LIMIT = 5 * 60 * 1000;
 
   function logoutDueToInactivity() {
       localStorage.removeItem('adminToken');
@@ -379,8 +377,8 @@
 
   <script>
     const API_BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-  ? "http://localhost:8080"
-  : "https://pep-back-production.up.railway.app";
+      ? "http://localhost:8080"
+      : "https://pep-back-production.up.railway.app";
     let allUsers = [];
     let socket = null;
 
@@ -782,8 +780,8 @@
         const status = (tx.status || 'pending').toLowerCase();
         if (status === 'pending') pendingCount++;
         const badgeClass = status === 'approved' ? 'badge-approved' : (status === 'rejected' ? 'badge-rejected' : 'badge-pending');
-        const displayChannel = tx.channel || 'MoMo';
-        const displayTxId = tx.transaction_id || tx.reference || 'N/A';
+        const displayChannel = tx.channel || tx.payment_channel || 'MoMo';
+        const displayTxId = tx.transaction_id || tx.reference_code || tx.reference || 'N/A';
 
         let proofHtml = '';
         const proofImgPath = tx.proof_image || tx.proofImage;
@@ -880,7 +878,7 @@
         if (status === 'pending') pendingCount++;
         const badgeClass = status === 'approved' ? 'badge-approved' : (status === 'rejected' ? 'badge-rejected' : 'badge-pending');
         
-        const channel = tx.bound_details?.channel || tx.channel || tx.channel_type || tx.payment_method || tx.bank_name || 'Other';
+        const channel = tx.bound_details?.channel || tx.channel || tx.channel_type || tx.payment_channel || tx.bank_name || 'Other';
         const officialName = tx.bound_details?.official_name || tx.official_name || tx.account_name || tx.card_name || '';
         const accNum = tx.bound_details?.account_number || tx.channel_number || tx.account_number || tx.bank_account_number || tx.card_number || '';
 
