@@ -620,31 +620,41 @@
 
     async function loadUserProfileAndTeam() {
       let refCode = null;
+      const token = localStorage.getItem('token') || localStorage.getItem('userToken');
+      const baseUrl = typeof API_BASE_URL !== 'undefined' ? API_BASE_URL : 'https://pep-back-production.up.railway.app';
 
-      // 1. Check direct standalone localStorage keys first
-      refCode = localStorage.getItem('referral_code') || localStorage.getItem('referralCode') || localStorage.getItem('code');
-
-      // 2. If not found, check inside the JWT token (token / userToken)
-      if (!refCode) {
-        const token = localStorage.getItem('token') || localStorage.getItem('userToken');
-        if (token) {
-          const decoded = parseJwt(token);
-          console.log("Decoded JWT Token:", decoded);
-          if (decoded) {
-            refCode = decoded.referralCode || decoded.referral_code || decoded.code || decoded.inviteCode || decoded.phone || decoded.username;
+      // 1. Try fetching the real user profile from the backend database
+      if (token) {
+        try {
+          const response = await fetch(`${baseUrl}/api/user/profile`, {
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+            }
+          });
+          if (response.ok) {
+            const result = await response.json();
+            const user = result.data || result.user || result;
+            refCode = user.referral_code || user.referralCode || user.code;
+            
+            // Save it to localStorage for future instant loading
+            if (refCode) {
+              localStorage.setItem('referral_code', refCode);
+            }
           }
+        } catch (err) {
+          console.warn("Could not fetch profile from backend, checking local storage.", err);
         }
       }
 
-      // 3. Fallback to userPhone if no referral code is embedded
+      // 2. Fallback to localStorage if offline or fetch failed
       if (!refCode) {
-        refCode = localStorage.getItem('userPhone');
+        refCode = localStorage.getItem('referral_code') || localStorage.getItem('referralCode');
       }
 
-      // Final fallback placeholder
+      // 3. Last fallback placeholder (removed phone number fallback so it won't show the phone)
       refCode = refCode || '------';
 
-      console.log("Final Resolved Referral Code/ID:", refCode);
       renderQRCodeAndLink(refCode);
       fetchTeamMetrics();
     }
