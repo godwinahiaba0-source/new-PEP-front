@@ -105,7 +105,7 @@
 </head>
 <body>
   <script>
-  if (!localStorage.getItem('adminToken') && !localStorage.getItem('token')) {
+  if (!localStorage.getItem('adminToken')) {
       window.location.href = 'admin-login.html';
   }
 
@@ -114,7 +114,6 @@
 
   function logoutDueToInactivity() {
       localStorage.removeItem('adminToken');
-      localStorage.removeItem('token');
       alert('Session expired due to 5 minutes of inactivity. Please log in again.');
       window.location.href = 'admin-login.html';
   }
@@ -384,18 +383,7 @@
     let socket = null;
 
     function getAuthToken() {
-      return localStorage.getItem('adminToken') || localStorage.getItem('token') || '';
-    }
-
-    function checkAuthResponse(res, data) {
-      if (res.status === 401 || res.status === 403 || (data && data.message && data.message.toLowerCase().includes('token'))) {
-        localStorage.removeItem('adminToken');
-        localStorage.removeItem('token');
-        alert('Session expired or unauthorized. Please log in again.');
-        window.location.href = 'admin-login.html';
-        return true;
-      }
-      return false;
+      return localStorage.getItem('adminToken') || localStorage.getItem('userToken') || '';
     }
 
     function showToast(text) {
@@ -512,7 +500,6 @@
         });
 
         const data = await res.json();
-        if (checkAuthResponse(res, data)) return;
         alert(data.message || 'Notice updated');
         if (data.success) {
           document.getElementById('noticeBroadcastForm').reset();
@@ -536,7 +523,6 @@
           body: JSON.stringify({ message: '' })
         });
         const data = await res.json();
-        if (checkAuthResponse(res, data)) return;
         alert(data.message || 'Notice cleared');
         loadCurrentNotice();
       } catch (err) {
@@ -550,7 +536,6 @@
           headers: { 'Authorization': `Bearer ${getAuthToken()}` }
         });
         const data = await res.json();
-        if (checkAuthResponse(res, data)) return;
 
         if (data.success && data.stats) {
           document.getElementById('statTotalUsers').innerText = data.stats.totalUsers || 0;
@@ -570,7 +555,6 @@
           headers: { 'Authorization': `Bearer ${getAuthToken()}` }
         });
         const data = await res.json();
-        if (checkAuthResponse(res, data)) return;
 
         if (data.success && Array.isArray(data.users) && data.users.length > 0) {
           allUsers = data.users;
@@ -647,7 +631,6 @@
           body: JSON.stringify({ userId, enabled: enabledState })
         });
         const data = await res.json();
-        if (checkAuthResponse(res, data)) return;
         alert(data.message || `Withdrawals updated successfully.`);
         refreshDashboard();
       } catch (err) {
@@ -691,7 +674,6 @@
           headers: { 'Authorization': `Bearer ${getAuthToken()}` }
         });
         const data = await res.json();
-        if (checkAuthResponse(res, data)) return;
 
         if (data.success && Array.isArray(data.tree) && data.tree.length > 0) {
           container.innerHTML = `
@@ -758,7 +740,6 @@
           body: JSON.stringify({ userId, action })
         });
         const data = await res.json();
-        if (checkAuthResponse(res, data)) return;
         alert(data.message || `User ${action}d successfully.`);
         refreshDashboard();
       } catch (err) {
@@ -774,7 +755,6 @@
           headers: { 'Authorization': `Bearer ${getAuthToken()}` }
         });
         const data = await res.json();
-        if (checkAuthResponse(res, data)) return;
 
         if (data.success && Array.isArray(data.recharges)) {
           renderRecharges(data.recharges);
@@ -853,7 +833,6 @@
           body: JSON.stringify({ transactionId, action })
         });
         const data = await res.json();
-        if (checkAuthResponse(res, data)) return;
         alert(data.message || 'Action executed successfully.');
         refreshDashboard();
       } catch (err) {
@@ -873,7 +852,6 @@
           }
         });
         const data = await res.json();
-        if (checkAuthResponse(res, data)) return;
 
         if (data.success && Array.isArray(data.withdrawals)) {
           renderWithdrawals(data.withdrawals);
@@ -955,7 +933,6 @@
           body: JSON.stringify({ transactionId, action })
         });
         const data = await res.json();
-        if (checkAuthResponse(res, data)) return;
         alert(data.message || 'Action executed successfully.');
         refreshDashboard();
       } catch (err) {
@@ -984,7 +961,6 @@
         });
 
         const data = await res.json();
-        if (checkAuthResponse(res, data)) return;
         alert(data.message || 'Balance updated.');
         if (data.success) {
           document.getElementById('balanceAdjustmentForm').reset();
@@ -1021,7 +997,6 @@
         });
 
         const data = await res.json();
-        if (checkAuthResponse(res, data)) return;
         alert(data.message || 'Payment account reset executed.');
 
         if (data.success) {
@@ -1073,7 +1048,6 @@
         });
 
         const data = await res.json();
-        if (checkAuthResponse(res, data)) return;
         alert(data.message || 'Password reset successfully.');
 
         if (data.success) {
