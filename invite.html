@@ -603,50 +603,26 @@
       document.getElementById('startDate').value = formatDateToYYYYMMDD(thirtyDaysAgo);
     }
 
-    // Load referral code from localStorage first, then fallback to backend API if missing
+    // Load referral code directly from localStorage session data
     async function loadUserProfileAndTeam() {
       let refCode = null;
 
-      // 1. Check local storage user profile data cache first
       try {
         const userData = JSON.parse(localStorage.getItem('userData'));
-        if (userData && (userData.referralCode || userData.referral_code)) {
-          refCode = userData.referralCode || userData.referral_code;
+        if (userData) {
+          // Check various common property names for referral code
+          refCode = userData.referralCode || userData.referral_code || userData.code || userData.inviteCode;
         }
       } catch (e) {
         console.warn("Could not read userData from localStorage", e);
       }
 
-      // 2. Check standalone keys in local storage
+      // Fallback to standalone keys if not inside userData object
       if (!refCode) {
-        refCode = localStorage.getItem('referral_code') || localStorage.getItem('referralCode');
+        refCode = localStorage.getItem('referral_code') || localStorage.getItem('referralCode') || localStorage.getItem('code');
       }
 
-      // 3. If still not found locally, fetch from backend API
-      if (!refCode) {
-        const token = localStorage.getItem('token') || localStorage.getItem('userToken');
-        const baseUrl = typeof API_BASE_URL !== 'undefined' ? API_BASE_URL : 'https://pep-back-production.up.railway.app';
-
-        try {
-          const response = await fetch(`${baseUrl}/api/user/referral-info`, {
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': token ? `Bearer ${token}` : ''
-            }
-          });
-
-          if (response.ok) {
-            const result = await response.json();
-            if (result.success && result.data) {
-              refCode = result.data.referralCode || result.data.referral_code;
-            }
-          }
-        } catch (err) {
-          console.warn("Backend /api/user/referral-info call failed.", err);
-        }
-      }
-
-      // Fallback safely to placeholder if both local storage and backend are empty
+      // Final fallback placeholder if not found
       refCode = refCode || '------';
 
       renderQRCodeAndLink(refCode);
