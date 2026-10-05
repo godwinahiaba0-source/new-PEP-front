@@ -603,27 +603,12 @@
       document.getElementById('startDate').value = formatDateToYYYYMMDD(thirtyDaysAgo);
     }
 
-    // Load referral code directly from localStorage session data
-    // Helper function to decode JWT token payload safely
-    function parseJwt(token) {
-      try {
-        const base64Url = token.split('.')[1];
-        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-        const jsonPayload = decodeURIComponent(window.atob(base64).split('').map(function(c) {
-            return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-        }).join(''));
-        return JSON.parse(jsonPayload);
-      } catch (e) {
-        return null;
-      }
-    }
-
     async function loadUserProfileAndTeam() {
       let refCode = null;
       const token = localStorage.getItem('token') || localStorage.getItem('userToken');
       const baseUrl = typeof API_BASE_URL !== 'undefined' ? API_BASE_URL : 'https://pep-back-production.up.railway.app';
 
-      // 1. Try fetching the real user profile from the backend database
+      // 1. Try fetching the real user profile from the backend database profile endpoint
       if (token) {
         try {
           const response = await fetch(`${baseUrl}/api/user/profile`, {
@@ -652,7 +637,7 @@
         refCode = localStorage.getItem('referral_code') || localStorage.getItem('referralCode');
       }
 
-      // 3. Last fallback placeholder (removed phone number fallback so it won't show the phone)
+      // 3. Final fallback placeholder
       refCode = refCode || '------';
 
       renderQRCodeAndLink(refCode);
