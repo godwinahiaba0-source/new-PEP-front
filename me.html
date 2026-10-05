@@ -538,10 +538,10 @@
 
     async function selectNewAvatar(avatarSrc) {
       const token = localStorage.getItem('userToken') || localStorage.getItem('token');
-      const baseUrl = typeof API_BASE_URL !== 'undefined' ? API_BASE_URL : 'https://backend-production-7c73b.up.railway.app';
+      const baseUrl = typeof API_BASE_URL !== 'undefined' ? API_BASE_URL : 'https://pep-back-production.up.railway.app';
 
       try {
-        const res = await fetch(`https://backend-production-7c73b.up.railway.app/api/user/update-avatar`, {
+        const res = await fetch(`${baseUrl}/api/user/update-avatar`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -581,8 +581,8 @@
 
       try {
         const [profileRes, summaryRes] = await Promise.all([
-          fetch('https://backend-production-7c73b.up.railway.app/api/user/profile', { headers }),
-          fetch('https://backend-production-7c73b.up.railway.app/api/user/account-summary', { headers })
+          fetch('https://pep-back-production.up.railway.app/api/user/profile', { headers }),
+          fetch('https://pep-back-production.up.railway.app/api/user/account-summary', { headers })
         ]);
 
         if (profileRes.status === 401 || profileRes.status === 403 || summaryRes.status === 401 || summaryRes.status === 403) {

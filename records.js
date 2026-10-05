@@ -23,7 +23,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 async function fetchUserProfile(token) {
   try {
     const baseUrl = typeof API_BASE_URL !== "undefined" ? API_BASE_URL : "";
-    const response = await fetch(`pep-back-production.up.railway.app/api/user/profile`, {
+    const response = await fetch(`https://pep-back-production.up.railway.app/api/user/profile`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -59,7 +59,7 @@ async function fetchTransactionHistory(token) {
 
   try {
     const baseUrl = typeof API_BASE_URL !== "undefined" ? API_BASE_URL : "";
-    const response = await fetch(`pep-back-production.up.railway.app/api/transactions`, {
+    const response = await fetch(`https://pep-back-production.up.railway.app/api/transactions`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",

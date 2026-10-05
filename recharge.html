@@ -721,7 +721,7 @@
             headers['Authorization'] = `Bearer ${token}`;
           }
 
-          response = await fetch(`pep-back-production.up.railway.app/api/recharge/submit-with-proof`, {
+          response = await fetch(`https://pep-back-production.up.railway.app/api/recharge/submit-with-proof`, {
             method: 'POST',
             headers: headers, // Explicitly sending headers without Content-Type so browser handles multipart boundary
             body: formData
@@ -735,7 +735,7 @@
             reference: reference
           };
 
-          response = await fetchWithAuth(`pep-back-production.up.railway.app/api/recharge/submit`, {
+          response = await fetchWithAuth(`https://pep-back-production.up.railway.app/api/recharge/submit`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(newDepositPayload)

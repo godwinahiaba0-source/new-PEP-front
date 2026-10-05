@@ -606,7 +606,7 @@
     // Load referral code from the backend /api/user/referral-info route
     async function loadUserProfileAndTeam() {
       const token = localStorage.getItem('token') || localStorage.getItem('userToken');
-      const baseUrl = typeof API_BASE_URL !== 'undefined' ? API_BASE_URL : 'pep-back-production.up.railway.app';
+      const baseUrl = typeof API_BASE_URL !== 'undefined' ? API_BASE_URL : 'https://pep-back-production.up.railway.app';
 
       let refCode = null;
 
@@ -663,7 +663,7 @@
       const token = localStorage.getItem('token') || localStorage.getItem('userToken');
       const startDateVal = document.getElementById('startDate').value;
       const endDateVal = document.getElementById('endDate').value;
-      const baseUrl = typeof API_BASE_URL !== 'undefined' ? API_BASE_URL : 'pep-back-production.up.railway.app';
+      const baseUrl = typeof API_BASE_URL !== 'undefined' ? API_BASE_URL : 'https://pep-back-production.up.railway.app';
 
       if (!startDateVal || !endDateVal) return;
 
