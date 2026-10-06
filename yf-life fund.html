@@ -644,7 +644,7 @@
           updateCalculations();
           loadFundSummary();
         } else {
-          if (typeof showToast === 'function') showToast(result.message || 'Investment failed', 'error');
+          if (typeof showToast === 'function') showToast(result.message || 'Investment failed');
         }
       } catch (error) {
         console.error('Investment submission error:', error);
