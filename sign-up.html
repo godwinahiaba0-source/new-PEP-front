@@ -285,9 +285,9 @@
       }
       const hostname = window.location.hostname;
       if (hostname === 'localhost' || hostname === '127.0.0.1') {
-        return 'http://localhost:5000';
+        return 'http://localhost:8080';
       }
-      return 'https://backend-production-7c73b.up.railway.app';
+      return 'https://pep-back-production.up.railway.app';
     }
 
     window.addEventListener('beforeinstallprompt', (e) => {
