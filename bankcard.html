@@ -326,6 +326,10 @@
   <script src="toast.js"></script>
 
   <script>
+    function getBaseUrl() {
+      return typeof API_BASE_URL !== 'undefined' ? API_BASE_URL : 'https://pep-back-production.up.railway.app';
+    }
+
     function renderChannelInputs() {
       const channel = document.getElementById('channelSelect').value;
       const container = document.getElementById('dynamicContainer');
@@ -363,10 +367,8 @@
         return;
       }
 
-      const baseUrl = 'http://pep-back-production.up.railway.app';
-
       try {
-        const response = await fetch(`http://${baseUrl}/api/bankcard`, {
+        const response = await fetch(`${getBaseUrl()}/api/bankcard`, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
@@ -388,7 +390,6 @@
           const cardData = resData.card || resData.data;
 
           if (cardData && cardData.account_number) {
-            // Save card details into localStorage so withdraw page can access it immediately
             localStorage.setItem('userBankCard', JSON.stringify(cardData));
 
             formEl.style.display = 'none';
@@ -457,10 +458,8 @@
       submitBtn.disabled = true;
       submitBtn.innerText = "Binding Account...";
 
-      const baseUrl = typeof API_BASE_URL !== 'undefined' ? API_BASE_URL : '';
-
       try {
-        const response = await fetch(`http://pep-back-production.up.railway.app`, {
+        const response = await fetch(`${getBaseUrl()}/api/bankcard`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -470,7 +469,6 @@
         });
 
         if (response.ok) {
-          // Instantly sync the newly bound card to localStorage for the withdrawal page
           const newlyBoundCard = {
             channel: channel,
             official_name: official_name,
