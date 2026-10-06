@@ -219,7 +219,7 @@
       if (window.location.origin && window.location.origin.startsWith('http')) {
         return window.location.origin;
       }
-      return 'pep-back-production.up.railway.app'; // Default fallback
+      return 'https://pep-back-production.up.railway.app'; // Default fallback
     }
 
     function clearAuthAndRedirect() {
@@ -256,7 +256,7 @@
       const baseUrl = getApiBaseUrl();
 
       try {
-        const response = await fetch(`pep-back-production.up.railway.app/api/auth/change-password`, {
+        const response = await fetch(`https://pep-back-production.up.railway.app/api/auth/change-password`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
