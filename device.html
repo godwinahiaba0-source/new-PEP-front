@@ -389,7 +389,7 @@
       if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
         return 'http://localhost:8080';
       }
-      return 'pep-back-production.up.railway.app';
+      return 'https://pep-back-production.up.railway.app';
     }
 
     async function loadDevices() {
@@ -397,7 +397,7 @@
       const baseUrl = getApiBaseUrl();
 
       try {
-        const userRes = await fetch(`pep-back-production.up.railway.app/api/devices/my-devices`, {
+        const userRes = await fetch(`${baseUrl}/api/devices/my-devices`, {
           headers: { 'Authorization': token ? `Bearer ${token}` : '' }
         });
 
@@ -437,7 +437,6 @@
         }
       } catch (err) {
         console.error('Buy device error:', err);
-        // Only show toast if it's a real failure, not a silent check
       }
     }
 
@@ -542,7 +541,7 @@
       const baseUrl = getApiBaseUrl();
 
       try {
-        const response = await fetch(`pep-back-production.up.railway.app/api/devices/buy`, {
+        const response = await fetch(`${baseUrl}/api/devices/buy`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
