@@ -397,46 +397,57 @@
       const baseUrl = getApiBaseUrl();
 
       try {
-        const userRes = await fetch(`${baseUrl}/api/devices/my-devices`, {
-          headers: { 'Authorization': token ? `Bearer ${token}` : '' }
-        });
-
-        if (userRes.ok) {
-          const userData = await userRes.json();
-          if (userData.success && Array.isArray(userData.data)) {
-            ownedDeviceIds = userData.data.map(item => item.device_id);
+        // 1. Fetch user owned devices safely
+        try {
+          const userRes = await fetch(`${baseUrl}/api/devices/my-devices`, {
+            headers: { 'Authorization': token ? `Bearer ${token}` : '' }
+          });
+          const contentType = userRes.headers.get("content-type");
+          if (userRes.ok && contentType && contentType.includes("application/json")) {
+            const userData = await userRes.json();
+            if (userData.success && Array.isArray(userData.data)) {
+              ownedDeviceIds = userData.data.map(item => item.device_id);
+            }
           }
+        } catch (e) {
+          console.warn('Could not fetch owned devices, proceeding with defaults:', e);
         }
 
-        const allRes = await fetch(`${baseUrl}/api/devices/list`, {
-          headers: { 'Authorization': token ? `Bearer ${token}` : '' }
-        });
+        // 2. Fetch available devices list safely
+        try {
+          const allRes = await fetch(`${baseUrl}/api/devices/list`, {
+            headers: { 'Authorization': token ? `Bearer ${token}` : '' }
+          });
+          const contentType = allRes.headers.get("content-type");
+          if (allRes.ok && contentType && contentType.includes("application/json")) {
+            const allData = await allRes.json();
+            if (allData.success && Array.isArray(allData.data)) {
+              let filteredDevices = allData.data.filter(device => device.id <= 12);
+              
+              filteredDevices = filteredDevices.map(device => {
+                if (device.id === 11) {
+                  return { ...device, price: 450000, hourly_yield: 1171.88 };
+                }
+                if (device.id === 12) {
+                  return { ...device, price: 500000, hourly_yield: 1302.08 };
+                }
+                return device;
+              });
 
-        if (allRes.ok) {
-          const allData = await allRes.json();
-          if (allData.success && Array.isArray(allData.data)) {
-            let filteredDevices = allData.data.filter(device => device.id <= 12);
-            
-            // Map corrections to overwrite incorrect backend API data for VIP11 & VIP12
-            filteredDevices = filteredDevices.map(device => {
-              if (device.id === 11) {
-                return { ...device, price: 450000, hourly_yield: 1171.88 };
-              }
-              if (device.id === 12) {
-                return { ...device, price: 500000, hourly_yield: 1302.08 };
-              }
-              return device;
-            });
-
-            renderDevices(filteredDevices);
-          } else {
-            renderFallbackDevices();
+              renderDevices(filteredDevices);
+              return;
+            }
           }
-        } else {
-          renderFallbackDevices();
+        } catch (e) {
+          console.warn('API list fetch failed, falling back to local list:', e);
         }
+
+        // Fallback if API fails or returns non-JSON
+        renderFallbackDevices();
+
       } catch (err) {
-        console.error('Buy device error:', err);
+        console.error('General load error:', err);
+        renderFallbackDevices();
       }
     }
 
@@ -550,6 +561,11 @@
           body: JSON.stringify({ device_id: deviceId })
         });
 
+        const contentType = response.headers.get("content-type");
+        if (!contentType || !contentType.includes("application/json")) {
+          throw new Error('Server returned non-JSON response');
+        }
+
         const data = await response.json();
 
         if (response.ok && data.success) {
@@ -573,7 +589,7 @@
         }
       } catch (err) {
         if (typeof showToast === 'function') {
-          showToast('Network error, checking balance status...', 'error');
+          showToast('Network error or server unavailable.', 'error');
         }
       }
     }
