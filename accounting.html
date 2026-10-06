@@ -148,7 +148,7 @@
   if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
     return 'http://localhost:8080';
   }
-  return 'pep-back-production.up.railway.app';
+  return 'https://pep-back-production.up.railway.app';
 }
 
     async function fetchAccountingRecords() {
@@ -206,7 +206,8 @@ try {
         const card = document.createElement('div');
         card.className = 'record-card';
 
-        const isDebit = tx.isDebit || tx.type === 'debit' || tx.type === 'withdrawal' || (typeof tx.amount === 'number' && tx.amount < 0) || (typeof tx.amount === 'string' && tx.amount.startsWith('-'));
+        // Include 'BUY_DEVICE' and 'BUY' so purchases show up as red debits
+        const isDebit = tx.isDebit || tx.type === 'debit' || tx.type === 'withdrawal' || tx.type === 'BUY_DEVICE' || tx.type === 'BUY' || (typeof tx.amount === 'number' && tx.amount < 0) || (typeof tx.amount === 'string' && tx.amount.startsWith('-'));
         const amountClass = isDebit ? 'record-amount debit' : 'record-amount';
 
         let formattedAmount = tx.amount;
