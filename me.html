@@ -6,7 +6,7 @@
   <title>Account - VF Life</title>
 
   <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#0047ab">
+  <meta name="theme-color" content="#e4002b">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <link rel="apple-touch-icon" href="pepsi-logo.png">
@@ -41,16 +41,15 @@
       box-shadow: 0 0 20px rgba(0,0,0,0.05);
     }
 
-    /* 1. Header Area - UPDATED TO COKE RED */
-.header-panel {
-  /* Dark red to slightly lighter red gradient */
-  background: linear-gradient(135deg, #d32f2f 0%, #b71c1c 100%);
-  padding: 20px 16px 65px 16px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  position: relative;
-}
+    /* 1. Header Area - Coke Red Gradient */
+    .header-panel {
+      background: linear-gradient(135deg, #e4002b 0%, #b30000 100%);
+      padding: 20px 16px 65px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: relative;
+    }
 
     .user-profile {
       display: flex;
@@ -81,7 +80,7 @@
       position: absolute;
       bottom: 0;
       right: 0;
-      background: #2563eb;
+      background: #e4002b;
       color: white;
       font-size: 9px;
       padding: 2px 4px;
@@ -178,7 +177,7 @@
       width: 22px;
       height: 22px;
       object-fit: contain;
-      filter: brightness(0) saturate(100%) invert(31%) sepia(87%) saturate(2250%) hue-rotate(212%) brightness(98%) contrast(93%);
+      filter: brightness(0) saturate(100%) invert(14%) sepia(99%) saturate(5437%) hue-rotate(348%) brightness(95%) contrast(102%);
     }
 
     .item-title {
@@ -265,7 +264,7 @@
     }
 
     .avatar-option:hover, .avatar-option.selected {
-      border-color: #3b82f6;
+      border-color: #e4002b;
       transform: scale(1.08);
     }
 
@@ -303,7 +302,7 @@
     }
 
     .nav-item.active {
-      color: #df7378;
+      color: #e4002b;
     }
   </style>
 </head>
@@ -593,7 +592,6 @@
 
         if (profileRes.ok) {
           const profileData = await profileRes.json();
-          // Support various response structures (direct properties, nested data object, or user object)
           const p = profileData.data || profileData.user || profileData;
           if (profileData.success || p) {
             const identifier = p.phone || p.username || p.account_number || p.email;
