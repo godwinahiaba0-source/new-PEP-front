@@ -391,33 +391,15 @@
       }
 
       submitBtn.disabled = true;
-      submitBtn.textContent = 'Verifying...';
+      submitBtn.textContent = 'Registering...';
 
       const baseUrl = resolveBaseUrl();
 
       try {
-        const verifyResponse = await fetch(`${baseUrl}/api/auth/verify-invite`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ inviteCode: inviteCode })
-        });
-
-        const verifyData = await verifyResponse.json();
-
-        if (!verifyResponse.ok || !verifyData.success) {
-          if (typeof showToast === 'function') {
-            showToast(verifyData.message || 'Invalid invitation code. Random codes are not allowed.', 'error');
-          }
-          submitBtn.disabled = false;
-          submitBtn.textContent = 'Register now';
-          return;
-        }
-
-        submitBtn.textContent = 'Registering...';
         const response = await fetch(`${baseUrl}/api/auth/register`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ phone, password: pass, inviteCode })
+          body: JSON.stringify({ phone, password: pass, referralCode: inviteCode })
         });
 
         const data = await response.json();
