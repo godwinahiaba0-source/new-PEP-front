@@ -384,6 +384,21 @@
     let pendingDeviceName = '';
     let pendingPrice = 0;
 
+    const fallbackList = [
+      { id: 1, name: 'VIP1', price: 100, hourly_yield: 0.26 },
+      { id: 2, name: 'VIP2', price: 200, hourly_yield: 0.46 },
+      { id: 3, name: 'VIP3', price: 500, hourly_yield: 1.04 },
+      { id: 4, name: 'VIP4', price: 1500, hourly_yield: 2.84 },
+      { id: 5, name: 'VIP5', price: 3000, hourly_yield: 6.25 },
+      { id: 6, name: 'VIP6', price: 10000, hourly_yield: 17.36 },
+      { id: 7, name: 'VIP7', price: 20000, hourly_yield: 37.87 },
+      { id: 8, name: 'VIP8', price: 60000, hourly_yield: 125.00 },
+      { id: 9, name: 'VIP9', price: 150000, hourly_yield: 347.22 },
+      { id: 10, name: 'VIP10', price: 300000, hourly_yield: 781.25 },
+      { id: 11, name: 'VIP11', price: 450000, hourly_yield: 1171.88 },
+      { id: 12, name: 'VIP12', price: 500000, hourly_yield: 1302.08 }
+    ];
+
     function getApiBaseUrl() {
       if (typeof API_BASE_URL !== 'undefined') return API_BASE_URL;
       if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
@@ -393,66 +408,50 @@
     }
 
     async function loadDevices() {
+      // 1. Render fallback list instantly so the page is never blank
+      renderDevices(fallbackList);
+
       const token = localStorage.getItem('userToken') || localStorage.getItem('token');
       const baseUrl = getApiBaseUrl();
 
       try {
-        // 1. Fetch user owned devices safely
-        try {
-          const userRes = await fetch(`${baseUrl}/api/devices/my-devices`, {
-            headers: { 'Authorization': token ? `Bearer ${token}` : '' }
-          });
-          const contentType = userRes.headers.get("content-type");
-          if (userRes.ok && contentType && contentType.includes("application/json")) {
-            const userData = await userRes.json();
-            if (userData.success && Array.isArray(userData.data)) {
-              ownedDeviceIds = userData.data.map(item => item.device_id);
-            }
+        // 2. Fetch user owned devices safely in background
+        const userRes = await fetch(`${baseUrl}/api/devices/my-devices`, {
+          headers: { 'Authorization': token ? `Bearer ${token}` : '' }
+        });
+        const userContentType = userRes.headers.get("content-type");
+        if (userRes.ok && userContentType && userContentType.includes("application/json")) {
+          const userData = await userRes.json();
+          if (userData.success && Array.isArray(userData.data)) {
+            ownedDeviceIds = userData.data.map(item => item.device_id);
           }
-        } catch (e) {
-          console.warn('Could not fetch owned devices, proceeding with defaults:', e);
         }
 
-        // 2. Fetch available devices list safely
-        try {
-          const allRes = await fetch(`${baseUrl}/api/devices/list`, {
-            headers: { 'Authorization': token ? `Bearer ${token}` : '' }
-          });
-          const contentType = allRes.headers.get("content-type");
-          if (allRes.ok && contentType && contentType.includes("application/json")) {
-            const allData = await allRes.json();
-            if (allData.success && Array.isArray(allData.data)) {
-              let filteredDevices = allData.data.filter(device => device.id <= 12);
-              
-              filteredDevices = filteredDevices.map(device => {
-                if (device.id === 11) {
-                  return { ...device, price: 450000, hourly_yield: 1171.88 };
-                }
-                if (device.id === 12) {
-                  return { ...device, price: 500000, hourly_yield: 1302.08 };
-                }
-                return device;
-              });
-
-              renderDevices(filteredDevices);
-              return;
-            }
+        // 3. Fetch live available devices from database if available
+        const allRes = await fetch(`${baseUrl}/api/devices/list`, {
+          headers: { 'Authorization': token ? `Bearer ${token}` : '' }
+        });
+        const allContentType = allRes.headers.get("content-type");
+        if (allRes.ok && allContentType && allContentType.includes("application/json")) {
+          const allData = await allRes.json();
+          if (allData.success && Array.isArray(allData.data)) {
+            let filteredDevices = allData.data.filter(device => device.id <= 12);
+            filteredDevices = filteredDevices.map(device => {
+              if (device.id === 11) return { ...device, price: 450000, hourly_yield: 1171.88 };
+              if (device.id === 12) return { ...device, price: 500000, hourly_yield: 1302.08 };
+              return device;
+            });
+            renderDevices(filteredDevices);
           }
-        } catch (e) {
-          console.warn('API list fetch failed, falling back to local list:', e);
         }
-
-        // Fallback if API fails or returns non-JSON
-        renderFallbackDevices();
-
       } catch (err) {
-        console.error('General load error:', err);
-        renderFallbackDevices();
+        console.warn('Background sync deferred, keeping instant UI configuration:', err);
       }
     }
 
     function renderDevices(devices) {
       const container = document.getElementById('deviceListContainer');
+      if (!container) return;
 
       container.innerHTML = devices.map(device => {
         const isOwned = ownedDeviceIds.includes(device.id);
@@ -492,24 +491,6 @@
           </div>
         `;
       }).join('');
-    }
-
-    function renderFallbackDevices() {
-      const fallbackList = [
-        { id: 1, name: 'VIP1', price: 100, hourly_yield: 0.26 },
-        { id: 2, name: 'VIP2', price: 200, hourly_yield: 0.46 },
-        { id: 3, name: 'VIP3', price: 500, hourly_yield: 1.04 },
-        { id: 4, name: 'VIP4', price: 1500, hourly_yield: 2.84 },
-        { id: 5, name: 'VIP5', price: 3000, hourly_yield: 6.25 },
-        { id: 6, name: 'VIP6', price: 10000, hourly_yield: 17.36 },
-        { id: 7, name: 'VIP7', price: 20000, hourly_yield: 37.87 },
-        { id: 8, name: 'VIP8', price: 60000, hourly_yield: 125.00 },
-        { id: 9, name: 'VIP9', price: 150000, hourly_yield: 347.22 },
-        { id: 10, name: 'VIP10', price: 300000, hourly_yield: 781.25 },
-        { id: 11, name: 'VIP11', price: 450000, hourly_yield: 1171.88 },
-        { id: 12, name: 'VIP12', price: 500000, hourly_yield: 1302.08 }
-      ];
-      renderDevices(fallbackList);
     }
 
     function requestJoinDevice(deviceId, deviceName, price) {
@@ -576,7 +557,7 @@
         } else {
           if (data.message && data.message.toLowerCase().includes('balance')) {
             if (typeof showToast === 'function') {
-              showToast('Insufficient balance. Redirecting to recharge...', 'warning');
+              showToast('Insufficient balance. Please recharge...', 'warning');
             }
             setTimeout(() => {
               window.location.href = `recharge.html?amount=${price}&device=${deviceId}`;
