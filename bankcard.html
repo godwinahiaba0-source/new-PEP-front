@@ -363,10 +363,10 @@
         return;
       }
 
-      const baseUrl = 'https://pep-back-production.up.railway.app';
+      const baseUrl = 'http://pep-back-production.up.railway.app';
 
       try {
-        const response = await fetch(`https://${baseUrl}/api/bankcard`, {
+        const response = await fetch(`http://${baseUrl}/api/bankcard`, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
@@ -460,7 +460,7 @@
       const baseUrl = typeof API_BASE_URL !== 'undefined' ? API_BASE_URL : '';
 
       try {
-        const response = await fetch(`https://pep-back-production.up.railway.app`, {
+        const response = await fetch(`http://pep-back-production.up.railway.app`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
