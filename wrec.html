@@ -65,8 +65,16 @@
   <script src="toast.js" onerror=""></script>
   <script>
     function resolveBaseUrl() {
-      if (typeof API_BASE_URL !== 'undefined' && API_BASE_URL) return API_BASE_URL;
-      return (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') ? 'http://localhost:8080' : 'https://pep-back-production.up.railway.app';
+      let url = (typeof API_BASE_URL !== 'undefined' && API_BASE_URL) ? API_BASE_URL : '';
+      if (!url) {
+        url = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') 
+          ? 'http://localhost:8080' 
+          : 'https://pep-back-production.up.railway.app';
+      }
+      if (url && !url.startsWith('http')) {
+        url = 'https://' + url;
+      }
+      return url;
     }
 
     function formatDate(dateInput) {
@@ -79,30 +87,41 @@
     async function loadWithdrawalData() {
       const token = localStorage.getItem('token') || localStorage.getItem('userToken');
       const baseUrl = resolveBaseUrl();
+      
       if (!token) {
         document.getElementById('withdrawal-list').innerHTML = '<p class="empty-msg">Please log in to view records.</p>';
         return;
       }
 
+      // Fetch Profile Balance
       try {
-        const profileRes = await fetch(`${baseUrl}/api/user/profile`, { headers: { 'Authorization': `Bearer ${token}` } });
+        const profileRes = await fetch(`${baseUrl}/api/user/profile`, { 
+          headers: { 'Authorization': `Bearer ${token}` } 
+        });
         if (profileRes.ok) {
           const profileData = await profileRes.json();
-          if (profileData.user?.balance !== undefined) {
-            document.getElementById('userWalletBalance').innerText = parseFloat(profileData.user.balance).toFixed(2);
+          const userObj = profileData.user || profileData.data || profileData;
+          if (userObj.balance !== undefined) {
+            document.getElementById('userWalletBalance').innerText = parseFloat(userObj.balance).toFixed(2);
           }
         }
-      } catch (e) {}
+      } catch (e) {
+        console.error('Profile fetch error:', e);
+      }
 
+      // Fetch Withdrawal History
       try {
-        const res = await fetch(`${baseUrl}/api/withdraw/history`, { headers: { 'Authorization': `Bearer ${token}` } });
+        const res = await fetch(`${baseUrl}/api/withdraw/history`, { 
+          headers: { 'Authorization': `Bearer ${token}` } 
+        });
+        
         if (res.ok) {
           const data = await res.json();
           const list = data.history || data.withdrawals || data.records || [];
           const container = document.getElementById('withdrawal-list');
           container.innerHTML = '';
 
-          if (list.length === 0) {
+          if (!Array.isArray(list) || list.length === 0) {
             container.innerHTML = '<p class="empty-msg">No withdrawal records found.</p>';
             return;
           }
@@ -124,16 +143,19 @@
                 <span class="record-date">${formatDate(item.created_at)}</span>
               </div>
               <div class="record-row">
-                <span class="record-amount" style="color: #e57373;">-${parseFloat(Math.abs(item.net_amount || item.amount)).toFixed(2)}</span>
+                <span class="record-amount" style="color: #e57373;">-${parseFloat(Math.abs(item.net_amount || item.amount)).toFixed(2)} GHS</span>
                 <span class="${statusClass}">${statusText}</span>
               </div>
             `;
             container.appendChild(card);
           });
           document.getElementById('noMoreData').style.display = 'block';
+        } else {
+          document.getElementById('withdrawal-list').innerHTML = '<p class="empty-msg">Failed to load records from server.</p>';
         }
       } catch (err) {
-        document.getElementById('withdrawal-list').innerHTML = '<p class="empty-msg">Failed to load withdrawal records.</p>';
+        console.error('Withdrawal history error:', err);
+        document.getElementById('withdrawal-list').innerHTML = '<p class="empty-msg">Network error loading withdrawal records.</p>';
       }
     }
 

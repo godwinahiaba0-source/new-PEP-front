@@ -65,8 +65,16 @@
   <script src="toast.js" onerror=""></script>
   <script>
     function resolveBaseUrl() {
-      if (typeof API_BASE_URL !== 'undefined' && API_BASE_URL) return API_BASE_URL;
-      return (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') ? 'http://localhost:8080' : 'https://pep-back-production.up.railway.app';
+      let url = (typeof API_BASE_URL !== 'undefined' && API_BASE_URL) ? API_BASE_URL : '';
+      if (!url) {
+        url = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') 
+          ? 'http://localhost:8080' 
+          : 'https://pep-back-production.up.railway.app';
+      }
+      if (url && !url.startsWith('http')) {
+        url = 'https://' + url;
+      }
+      return url;
     }
 
     function formatDate(dateInput) {
@@ -77,26 +85,45 @@
     }
 
     async function loadWalletData() {
-      const token = localStorage.getItem('userToken') || localStorage.getItem('token');
+      const token = localStorage.getItem('token') || localStorage.getItem('userToken');
       const baseUrl = resolveBaseUrl();
-      if (!token) return;
+      
+      if (!token) {
+        document.getElementById('recharge-list').innerHTML = '<p class="empty-msg">Please log in to view records.</p>';
+        return;
+      }
 
+      // Fetch Profile Balance
       try {
-        const profileRes = await fetch(`${baseUrl}/api/user/profile`, { headers: { 'Authorization': `Bearer ${token}` } });
+        const profileRes = await fetch(`${baseUrl}/api/user/profile`, { 
+          headers: { 'Authorization': `Bearer ${token}` } 
+        });
         if (profileRes.ok) {
           const profileData = await profileRes.json();
-          if (profileData.user?.balance !== undefined) {
-            document.getElementById('userWalletBalance').innerText = parseFloat(profileData.user.balance).toFixed(2);
+          const userObj = profileData.user || profileData.data || profileData;
+          if (userObj.balance !== undefined) {
+            document.getElementById('userWalletBalance').innerText = parseFloat(userObj.balance).toFixed(2);
           }
         }
       } catch (e) {}
 
+      // Fetch Accounting / Recharge Records
       try {
-        const res = await fetch(`${baseUrl}/api/accounting`, { headers: { 'Authorization': `Bearer ${token}` } });
+        const res = await fetch(`${baseUrl}/api/accounting`, { 
+          headers: { 'Authorization': `Bearer ${token}` } 
+        });
+        
         if (res.ok) {
           const data = await res.json();
-          const records = (Array.isArray(data) ? data : (data.records || []))
-            .filter(tx => tx.type === 'deposit' || tx.type === 'recharge');
+          const rawRecords = Array.isArray(data) ? data : (data.records || data.history || []);
+          
+          // Filter robustly for deposits/recharges
+          const records = rawRecords.filter(tx => {
+            const type = String(tx.type || '').toLowerCase();
+            const cat = String(tx.category || '').toLowerCase();
+            const title = String(tx.title || '').toLowerCase();
+            return type === 'deposit' || type === 'recharge' || cat === 'recharge' || title.includes('recharge');
+          });
 
           const container = document.getElementById('recharge-list');
           container.innerHTML = '';
@@ -123,16 +150,19 @@
                 <span class="record-date">${formatDate(item.created_at)}</span>
               </div>
               <div class="record-row">
-                <span class="record-amount">+${parseFloat(Math.abs(item.amount)).toFixed(2)}</span>
+                <span class="record-amount">+${parseFloat(Math.abs(item.amount)).toFixed(2)} GHS</span>
                 <span class="${statusClass}">${statusText}</span>
               </div>
             `;
             container.appendChild(card);
           });
           document.getElementById('noMoreData').style.display = 'block';
+        } else {
+          document.getElementById('recharge-list').innerHTML = '<p class="empty-msg">Failed to load recharge records.</p>';
         }
       } catch (err) {
-        document.getElementById('recharge-list').innerHTML = '<p class="empty-msg">Failed to load recharge records.</p>';
+        console.error('Recharge records error:', err);
+        document.getElementById('recharge-list').innerHTML = '<p class="empty-msg">Network error loading recharge records.</p>';
       }
     }
 
