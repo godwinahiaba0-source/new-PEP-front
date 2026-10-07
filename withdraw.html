@@ -363,12 +363,15 @@
       }
 
       const token = localStorage.getItem('token') || localStorage.getItem('userToken');
-      const baseUrl = resolveBaseUrl();
+      let baseUrl = resolveBaseUrl();
+      if (!baseUrl.startsWith('http')) {
+        baseUrl = 'https://' + baseUrl;
+      }
 
       if (token) {
-        // 1. Fetch balance
+        // 1. Fetch balance using proper baseUrl
         try {
-          const res = await fetch(`http://pep-back-production.up.railway.app/api/user/profile`, {
+          const res = await fetch(`${baseUrl}/api/user/profile`, {
             headers: { 'Authorization': `Bearer ${token}` }
           });
           if (res.ok) {
@@ -378,11 +381,13 @@
               document.getElementById('display-balance').textContent = parseFloat(payload.balance).toFixed(2);
             }
           }
-        } catch (e) {}
+        } catch (e) {
+          console.error('Failed to load profile:', e);
+        }
 
-        // 2. Check for active/pending withdrawal requests to lock form if needed
+        // 2. Check for active/pending withdrawal requests
         try {
-          const statusRes = await fetch(`http://pep-back-production.up.railway.app/api/withdraw/history`, {
+          const statusRes = await fetch(`${baseUrl}/api/withdraw/history`, {
             headers: { 'Authorization': `Bearer ${token}` }
           });
           if (statusRes.ok) {
@@ -399,10 +404,10 @@
           }
         } catch (e) {}
 
-        // 3. Fetch card from backend if local storage is completely empty
+        // 3. Fetch card from backend if local storage is empty
         if (!activeCard) {
           try {
-            const res = await fetch(`http://pep-back-production.up.railway.app/api/user/bank-card`, {
+            const res = await fetch(`${baseUrl}/api/user/bank-card`, {
               headers: { 'Authorization': `Bearer ${token}` }
             });
             if (res.ok) {
