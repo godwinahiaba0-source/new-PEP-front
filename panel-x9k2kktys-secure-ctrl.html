@@ -105,7 +105,12 @@
 </head>
 <body>
   <script>
-  if (!localStorage.getItem('adminToken')) {
+  // Robust token retrieval checking multiple possible keys ('adminToken', 'token', 'jwt')
+  function getAuthToken() {
+    return localStorage.getItem('adminToken') || localStorage.getItem('token') || localStorage.getItem('jwt') || '';
+  }
+
+  if (!getAuthToken()) {
       window.location.href = 'admin-login.html';
   }
 
@@ -114,6 +119,8 @@
 
   function logoutDueToInactivity() {
       localStorage.removeItem('adminToken');
+      localStorage.removeItem('token');
+      localStorage.removeItem('jwt');
       alert('Session expired due to 5 minutes of inactivity. Please log in again.');
       window.location.href = 'admin-login.html';
   }
@@ -382,11 +389,6 @@
     let allUsers = [];
     let socket = null;
 
-    // SECURE FIX: Removed userToken fallback entirely so user tokens never get sent to admin routes
-    function getAuthToken() {
-      return localStorage.getItem('adminToken') || '';
-    }
-
     function showToast(text) {
       const toast = document.getElementById('copyToast');
       toast.innerText = text;
@@ -446,7 +448,7 @@
         }
       });
 
-      socket.on('new_recharge_received', (data) => {
+      socket.on('new_recharge_received', () => {
         showToast('New recharge request received');
         loadRechargesData();
         loadOverviewStats();
@@ -539,9 +541,10 @@
         const data = await res.json();
 
         if (data.success && data.stats) {
-          document.getElementById('statTotalUsers').innerText = data.stats.totalUsers || 0;
-          document.getElementById('statTotalDeposits').innerText = `${parseFloat(data.stats.totalDeposits || data.stats.totalRecharges || 0).toFixed(2)} GHS`;
-          document.getElementById('statTotalWithdrawals').innerText = `${parseFloat(data.stats.totalWithdrawals || 0).toFixed(2)} GHS`;
+          const s = data.stats;
+          document.getElementById('statTotalUsers').innerText = s.totalUsers || s.total_users || 0;
+          document.getElementById('statTotalDeposits').innerText = `${parseFloat(s.totalDeposits || s.totalRecharges || s.total_deposits || s.total_recharges || 0).toFixed(2)} GHS`;
+          document.getElementById('statTotalWithdrawals').innerText = `${parseFloat(s.totalWithdrawals || s.total_withdrawals || 0).toFixed(2)} GHS`;
         }
       } catch (err) {
         console.error('Failed to load stats:', err);
@@ -557,8 +560,9 @@
         });
         const data = await res.json();
 
-        if (data.success && Array.isArray(data.users) && data.users.length > 0) {
-          allUsers = data.users;
+        const usersList = data.users || data.data || [];
+        if (data.success && Array.isArray(usersList) && usersList.length > 0) {
+          allUsers = usersList;
           filterUsers();
         } else {
           allUsers = [];
@@ -573,8 +577,8 @@
     function filterUsers() {
       const query = document.getElementById('userSearchInput').value.trim().toLowerCase();
       const filtered = allUsers.filter(user => {
-        const phone = (user.phone || '').toString().toLowerCase();
-        const id = (user.id || '').toString();
+        const phone = (user.phone || user.phone_number || '').toString().toLowerCase();
+        const id = (user.id || user.user_id || '').toString();
         const officialName = (user.official_name || user.account_name || user.card_name || '').toLowerCase();
         const accNum = (user.channel_number || user.account_number || user.bank_account_number || user.card_number || '').toLowerCase();
         const channel = (user.channel_type || user.channel || user.bank_name || '').toLowerCase();
@@ -594,23 +598,24 @@
       }
 
       tbody.innerHTML = users.map(user => {
+        const userId = user.id || user.user_id;
         const isDeleted = user.status === 'deleted' || user.is_deleted == 1;
 
         return `
           <tr>
-            <td>#${user.id}</td>
-            <td><strong>${user.phone || 'N/A'}</strong></td>
+            <td>#${userId}</td>
+            <td><strong>${user.phone || user.phone_number || 'N/A'}</strong></td>
             <td>${parseFloat(user.balance || 0).toFixed(2)} GHS</td>
-            <td><strong>VIP ${user.vip_level || 0}</strong></td>
+            <td><strong>VIP ${user.vip_level || user.vipLevel || 0}</strong></td>
             <td><span class="${isDeleted ? 'badge-deleted' : 'badge-approved'}">${isDeleted ? 'DELETED' : 'ACTIVE'}</span></td>
             <td>
-              <button class="btn-action btn-approve" onclick="toggleUserWithdrawal(${user.id}, 1)">Enable W/D</button>
-              <button class="btn-action btn-reject" onclick="toggleUserWithdrawal(${user.id}, 0)">Disable W/D</button>
+              <button class="btn-action btn-approve" onclick="toggleUserWithdrawal(${userId}, 1)">Enable W/D</button>
+              <button class="btn-action btn-reject" onclick="toggleUserWithdrawal(${userId}, 0)">Disable W/D</button>
             </td>
             <td>
               ${isDeleted ? 
-                `<button class="btn-action btn-restore" onclick="toggleUserStatus(${user.id}, 'restore')">Restore</button>` : 
-                `<button class="btn-action btn-reject" onclick="toggleUserStatus(${user.id}, 'delete')">Delete</button>`
+                `<button class="btn-action btn-restore" onclick="toggleUserStatus(${userId}, 'restore')">Restore</button>` : 
+                `<button class="btn-action btn-reject" onclick="toggleUserStatus(${userId}, 'delete')">Delete</button>`
               }
             </td>
           </tr>
@@ -647,19 +652,23 @@
         return;
       }
 
-      tbody.innerHTML = users.map(user => `
-        <tr>
-          <td>#${user.id}</td>
-          <td><strong>${user.phone || 'N/A'}</strong></td>
-          <td>${parseFloat(user.balance || 0).toFixed(2)} GHS</td>
-          <td><span style="color: #38bdf8; font-weight: bold;">${user.total_referrals || 0}</span></td>
-          <td><span class="badge-approved">${user.deposited_referrals || 0} Active</span></td>
-          <td><span class="badge-rejected">${user.non_deposited_referrals || 0} Unfunded</span></td>
-          <td>
-            <button class="btn-action btn-view" onclick="viewReferralTree(${user.id}, '${user.phone || user.id}')">Tree View</button>
-          </td>
-        </tr>
-      `).join('');
+      tbody.innerHTML = users.map(user => {
+        const userId = user.id || user.user_id;
+        const phone = user.phone || user.phone_number || 'N/A';
+        return `
+          <tr>
+            <td>#${userId}</td>
+            <td><strong>${phone}</strong></td>
+            <td>${parseFloat(user.balance || 0).toFixed(2)} GHS</td>
+            <td><span style="color: #38bdf8; font-weight: bold;">${user.total_referrals || user.totalReferrals || 0}</span></td>
+            <td><span class="badge-approved">${user.deposited_referrals || user.depositedReferrals || 0} Active</span></td>
+            <td><span class="badge-rejected">${user.non_deposited_referrals || user.nonDepositedReferrals || 0} Unfunded</span></td>
+            <td>
+              <button class="btn-action btn-view" onclick="viewReferralTree(${userId}, '${phone}')">Tree View</button>
+            </td>
+          </tr>
+        `;
+      }).join('');
     }
 
     async function viewReferralTree(userId, phone) {
@@ -676,7 +685,8 @@
         });
         const data = await res.json();
 
-        if (data.success && Array.isArray(data.tree) && data.tree.length > 0) {
+        const treeList = data.tree || data.referrals || [];
+        if (data.success && Array.isArray(treeList) && treeList.length > 0) {
           container.innerHTML = `
             <div class="table-responsive">
               <table>
@@ -691,16 +701,16 @@
                   </tr>
                 </thead>
                 <tbody>
-                  ${data.tree.map(ref => `
+                  ${treeList.map(ref => `
                     <tr>
-                      <td>#${ref.id}</td>
-                      <td><strong>${ref.phone || 'N/A'}</strong></td>
+                      <td>#${ref.id || ref.user_id}</td>
+                      <td><strong>${ref.phone || ref.phone_number || 'N/A'}</strong></td>
                       <td><span style="color: #38bdf8; font-weight: 600;">Level ${ref.level || 1}</span></td>
                       <td>${parseFloat(ref.balance || 0).toFixed(2)} GHS</td>
-                      <td style="color: #22c55e; font-weight: bold;">${parseFloat(ref.total_deposited || 0).toFixed(2)} GHS</td>
+                      <td style="color: #22c55e; font-weight: bold;">${parseFloat(ref.total_deposited || ref.totalDeposited || 0).toFixed(2)} GHS</td>
                       <td>
-                        <span class="${parseFloat(ref.total_deposited || 0) > 0 ? 'badge-approved' : 'badge-rejected'}">
-                          ${parseFloat(ref.total_deposited || 0) > 0 ? 'FUNDED' : 'UNFUNDED'}
+                        <span class="${parseFloat(ref.total_deposited || ref.totalDeposited || 0) > 0 ? 'badge-approved' : 'badge-rejected'}">
+                          ${parseFloat(ref.total_deposited || ref.totalDeposited || 0) > 0 ? 'FUNDED' : 'UNFUNDED'}
                         </span>
                       </td>
                     </tr>
@@ -757,8 +767,9 @@
         });
         const data = await res.json();
 
-        if (data.success && Array.isArray(data.recharges)) {
-          renderRecharges(data.recharges);
+        const rechargesList = data.recharges || data.data || [];
+        if (data.success && Array.isArray(rechargesList)) {
+          renderRecharges(rechargesList);
         } else {
           tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #ef4444;">${data.message || 'Error fetching recharges'}</td></tr>`;
         }
@@ -781,8 +792,8 @@
         const status = (tx.status || 'pending').toLowerCase();
         if (status === 'pending') pendingCount++;
         const badgeClass = status === 'approved' ? 'badge-approved' : (status === 'rejected' ? 'badge-rejected' : 'badge-pending');
-        const displayChannel = tx.channel || tx.payment_channel || 'MoMo';
-        const displayTxId = tx.transaction_id || tx.reference_code || tx.reference || 'N/A';
+        const displayChannel = tx.channel || tx.payment_channel || tx.channel_type || 'MoMo';
+        const displayTxId = tx.transaction_id || tx.reference_code || tx.reference || tx.id || 'N/A';
 
         let proofHtml = '';
         const proofImgPath = tx.proof_image || tx.proofImage;
@@ -798,10 +809,11 @@
           `;
         }
 
+        const txId = tx.id || tx.transaction_id;
         return `
           <tr>
-            <td>#${tx.id}</td>
-            <td><strong>${tx.phone || 'N/A'}</strong></td>
+            <td>#${txId}</td>
+            <td><strong>${tx.phone || tx.phone_number || 'N/A'}</strong></td>
             <td>
               ${displayChannel} <br><small style="color:#94a3b8">${displayTxId}</small>
               ${proofHtml}
@@ -810,8 +822,8 @@
             <td><span class="${badgeClass}">${status.toUpperCase()}</span></td>
             <td>
               ${status === 'pending' ? `
-                <button class="btn-action btn-approve" onclick="processRechargeAction(${tx.id}, 'approve')">Approve</button>
-                <button class="btn-action btn-reject" onclick="processRechargeAction(${tx.id}, 'reject')">Reject</button>
+                <button class="btn-action btn-approve" onclick="processRechargeAction(${txId}, 'approve')">Approve</button>
+                <button class="btn-action btn-reject" onclick="processRechargeAction(${txId}, 'reject')">Reject</button>
               ` : '<span style="color: #64748b;">Processed</span>'}
             </td>
           </tr>
@@ -854,8 +866,9 @@
         });
         const data = await res.json();
 
-        if (data.success && Array.isArray(data.withdrawals)) {
-          renderWithdrawals(data.withdrawals);
+        const withdrawalsList = data.withdrawals || data.data || [];
+        if (data.success && Array.isArray(withdrawalsList)) {
+          renderWithdrawals(withdrawalsList);
         } else {
           tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #ef4444;">${data.message || 'Error fetching withdrawals'}</td></tr>`;
         }
@@ -883,9 +896,9 @@
         const officialName = tx.bound_details?.official_name || tx.official_name || tx.account_name || tx.card_name || '';
         const accNum = tx.bound_details?.account_number || tx.channel_number || tx.account_number || tx.bank_account_number || tx.card_number || '';
 
-        const grossAmount = parseFloat(tx.gross_amount || tx.amount || 0);
-        const handlingFee = parseFloat(tx.fee_amount || tx.fee || tx.handling_fee || 0);
-        const netAmount = parseFloat(tx.net_amount || (grossAmount - handlingFee));
+        const grossAmount = parseFloat(tx.gross_amount || tx.amount || tx.grossAmount || 0);
+        const handlingFee = parseFloat(tx.fee_amount || tx.fee || tx.handling_fee || tx.feeAmount || 0);
+        const netAmount = parseFloat(tx.net_amount || tx.netAmount || (grossAmount - handlingFee));
 
         let accountDisplay = `<div class="card-info">`;
         accountDisplay += `<div><strong>Channel:</strong> <span style="color:#38bdf8; font-weight:600;">${channel}</span></div>`;
@@ -894,10 +907,11 @@
         if (!officialName && !accNum) accountDisplay += `<div>N/A</div>`;
         accountDisplay += `</div>`;
 
+        const txId = tx.id || tx.transaction_id;
         return `
           <tr>
-            <td>#${tx.id}</td>
-            <td><strong>${tx.phone || 'N/A'}</strong></td>
+            <td>#${txId}</td>
+            <td><strong>${tx.phone || tx.phone_number || 'N/A'}</strong></td>
             <td>${accountDisplay}</td>
             <td>
               <div style="color: #22c55e; font-size: 1.05rem; font-weight: 700;">
@@ -910,8 +924,8 @@
             <td><span class="${badgeClass}">${status.toUpperCase()}</span></td>
             <td>
               ${status === 'pending' ? `
-                <button class="btn-action btn-approve" onclick="processAction(${tx.id}, 'approve')">Approve</button>
-                <button class="btn-action btn-reject" onclick="processAction(${tx.id}, 'reject')">Reject</button>
+                <button class="btn-action btn-approve" onclick="processAction(${txId}, 'approve')">Approve</button>
+                <button class="btn-action btn-reject" onclick="processAction(${txId}, 'reject')">Reject</button>
               ` : '<span style="color: #64748b;">Processed</span>'}
             </td>
           </tr>
@@ -1027,12 +1041,12 @@
       }
 
       const matchedUser = allUsers.find(u => 
-        String(u.id) === inputVal || String(u.phone).trim() === inputVal
+        String(u.id || u.user_id) === inputVal || String(u.phone || u.phone_number).trim() === inputVal
       );
 
       let payload = {};
       if (matchedUser) {
-        payload = { userId: matchedUser.id, phone: matchedUser.phone, newPassword };
+        payload = { userId: matchedUser.id || matchedUser.user_id, phone: matchedUser.phone || matchedUser.phone_number, newPassword };
       } else {
         const isNumeric = !isNaN(inputVal);
         payload = isNumeric ? { userId: inputVal, newPassword } : { phone: inputVal, newPassword };
