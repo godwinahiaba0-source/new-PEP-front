@@ -95,8 +95,15 @@
         const res = await fetch(`${baseUrl}/api/accounting`, { headers: { 'Authorization': `Bearer ${token}` } });
         if (res.ok) {
           const data = await res.json();
-          const records = (Array.isArray(data) ? data : (data.records || []))
-            .filter(tx => tx.type === 'deposit' || tx.type === 'recharge');
+          const rawRecords = Array.isArray(data) ? data : (data.records || data.history || []);
+          
+          // Broad filter to capture all recharges/deposits regardless of naming convention
+          const records = rawRecords.filter(tx => {
+            const type = String(tx.type || '').toLowerCase();
+            const cat = String(tx.category || '').toLowerCase();
+            const title = String(tx.title || '').toLowerCase();
+            return type === 'deposit' || type === 'recharge' || cat === 'recharge' || title.includes('recharge') || title.includes('deposit');
+          });
 
           const container = document.getElementById('recharge-list');
           container.innerHTML = '';
@@ -119,11 +126,11 @@
             card.className = 'record-card';
             card.innerHTML = `
               <div class="record-row">
-                <span class="order-id">DEP_${item.id || 'N/A'}</span>
+                <span class="order-id">${item.reference_code || item.id || 'DEP_N/A'}</span>
                 <span class="record-date">${formatDate(item.created_at)}</span>
               </div>
               <div class="record-row">
-                <span class="record-amount">+${parseFloat(Math.abs(item.amount)).toFixed(2)}</span>
+                <span class="record-amount">+${parseFloat(Math.abs(item.amount || 0)).toFixed(2)} GHS</span>
                 <span class="${statusClass}">${statusText}</span>
               </div>
             `;
