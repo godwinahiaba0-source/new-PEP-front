@@ -376,10 +376,12 @@
           });
           if (res.ok) {
             const data = await res.json();
-            const payload = data.data || data;
-            if (payload.balance !== undefined) {
-              document.getElementById('display-balance').textContent = parseFloat(payload.balance).toFixed(2);
-            }
+            
+            // Extract balance safely from whatever format the server returned
+            const payload = data.user || data.data || data.profile || data;
+            const balance = payload.balance !== undefined ? payload.balance : (data.balance !== undefined ? data.balance : 0);
+            
+            document.getElementById('display-balance').textContent = parseFloat(balance).toFixed(2);
           }
         } catch (e) {
           console.error('Failed to load profile:', e);
