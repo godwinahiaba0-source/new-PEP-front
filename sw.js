@@ -1,6 +1,7 @@
 const CACHE_NAME = 'pepsi-vip-v2';
 const urlsToCache = [
   'home.html',
+  'yf-life fund.html',
   'profit.html',
   'me.html',
   'invite.html',

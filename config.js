@@ -25,7 +25,7 @@ function clearAuthSession() {
 // ==========================================
 document.addEventListener("DOMContentLoaded", () => {
   const pageCache = {};
-  const navPages = ['home.html', 'invite.html', 'device.html', 'profit.html', 'me.html'];
+  const navPages = ['home.html', 'invite.html', 'device.html', 'profit.html', 'me.html', 'yf-life fund.html'];
 
   // 1. Immediately pre-cache ALL navigation pages in the background on startup
   navPages.forEach(page => {
