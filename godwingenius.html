@@ -3,200 +3,94 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin Portal - PEP VIP</title>
+  <title>Pepsi VIP - Admin Login</title>
   <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    }
-
-    body {
-      background-color: #0d1117;
-      color: #c9d1d9;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
-    }
-
-    .login-container {
-      background-color: #161b22;
-      border: 1px solid #30363d;
-      border-radius: 16px;
-      width: 100%;
-      max-width: 440px;
-      padding: 40px 30px;
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
-      text-align: center;
-    }
-
-    .logo-container {
-      margin-bottom: 24px;
-    }
-
-    .logo-container img {
-      width: 72px;
-      height: 72px;
-      border-radius: 14px;
-      object-fit: cover;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-      margin-bottom: 10px;
-    }
-
-    .brand-subtitle {
-      font-size: 11px;
-      text-transform: uppercase;
-      letter-spacing: 2px;
-      color: #8b949e;
-      font-weight: 600;
-    }
-
-    h1 {
-      font-size: 26px;
-      color: #38bdf8;
-      margin-top: 12px;
-      margin-bottom: 8px;
-      font-weight: 700;
-    }
-
-    .instruction {
-      font-size: 14px;
-      color: #8b949e;
-      margin-bottom: 30px;
-    }
-
-    .form-group {
-      text-align: left;
-      margin-bottom: 20px;
-    }
-
-    label {
-      display: block;
-      font-size: 13px;
-      font-weight: 600;
-      color: #e6edf3;
-      margin-bottom: 8px;
-    }
-
-    input {
-      width: 100%;
-      padding: 12px 16px;
-      background-color: #0d1117;
-      border: 1px solid #30363d;
-      border-radius: 8px;
-      color: #ffffff;
-      font-size: 14px;
-      transition: border-color 0.2s, box-shadow 0.2s;
-    }
-
-    input:focus {
-      outline: none;
-      border-color: #0284c7;
-      box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.2);
-    }
-
-    input::placeholder {
-      color: #6e7681;
-    }
-
-    .login-btn {
-      width: 100%;
-      padding: 12px;
-      background-color: #0284c7;
-      color: #ffffff;
-      border: none;
-      border-radius: 8px;
-      font-size: 15px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: background-color 0.2s;
-      margin-top: 10px;
-    }
-
-    .login-btn:hover {
-      background-color: #0369a1;
-    }
-
-    .error-message {
-      background-color: rgba(239, 68, 68, 0.1);
-      border: 1px solid rgba(239, 68, 68, 0.3);
-      color: #f87171;
-      padding: 10px;
-      border-radius: 8px;
-      font-size: 13px;
-      margin-bottom: 20px;
-      display: none;
-    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; }
+    body { background-color: #0b0f19; color: #f1f5f9; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+    .login-card { background-color: #111827; border: 1px solid #1f2937; padding: 30px; border-radius: 12px; width: 100%; max-width: 400px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
+    .logo-area { text-align: center; margin-bottom: 24px; }
+    .logo-area img { width: 64px; height: 64px; border-radius: 12px; object-fit: cover; margin-bottom: 10px; }
+    h1 { font-size: 1.4rem; color: #38bdf8; margin-bottom: 6px; text-align: center; }
+    p.sub { font-size: 0.85rem; color: #9ca3af; text-align: center; margin-bottom: 20px; }
+    .form-group { margin-bottom: 16px; }
+    label { display: block; font-size: 0.8rem; color: #9ca3af; margin-bottom: 6px; }
+    input { width: 100%; padding: 10px 14px; background-color: #030712; border: 1px solid #374151; border-radius: 6px; color: #fff; font-size: 0.95rem; }
+    input:focus { border-color: #38bdf8; outline: none; }
+    .btn { width: 100%; background-color: #0284c7; color: #fff; border: none; padding: 11px; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 0.95rem; transition: 0.2s; margin-top: 6px; }
+    .btn:hover { background-color: #0369a1; }
+    #errorAlert { display: none; background: #7f1d1d; border: 1px solid #f87171; color: #fca5a5; padding: 10px; border-radius: 6px; margin-bottom: 16px; font-size: 0.85rem; text-align: center; font-weight: 600; }
   </style>
 </head>
 <body>
 
-  <div class="login-container">
-    <div class="logo-container">
-      <!-- Image requested: welcm.jpg -->
-      <img src="welcm.jpg" alt="Logo">
-      <div class="brand-subtitle">PEP VIP</div>
+  <div class="login-card">
+    <div class="logo-area">
+      <h1>Admin Portal</h1>
+      <p class="sub">Enter your admin credentials to proceed</p>
     </div>
 
-    <h1>Admin Portal</h1>
-    <p class="instruction">Enter your admin credentials to proceed</p>
+    <div id="errorAlert">Network error. Please check your connection.</div>
 
-    <div id="errorAlert" class="error-message"></div>
-
-    <form id="adminLoginForm">
+    <form onsubmit="handleAdminLogin(event)">
       <div class="form-group">
-        <label for="username">Username</label>
-        <input type="text" id="username" name="username" placeholder="Enter admin username" required autocomplete="username">
+        <label>Username</label>
+        <input type="text" id="username" placeholder="Enter admin username" required autocomplete="username">
       </div>
-
       <div class="form-group">
-        <label for="password">Password</label>
-        <input type="password" id="password" name="password" placeholder="Enter admin password" required autocomplete="current-password">
+        <label>Password</label>
+        <input type="password" id="password" placeholder="Enter password" required autocomplete="current-password">
       </div>
-
-      <button type="submit" class="login-btn">Login to Dashboard</button>
+      <button type="submit" class="btn" id="loginBtn">Login to Dashboard</button>
     </form>
   </div>
 
   <script>
-    const form = document.getElementById('adminLoginForm');
-    const errorAlert = document.getElementById('errorAlert');
+    // Dynamic API Endpoint Resolver (Local vs Production Railway)
+    const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+      ? "http://localhost:8080"
+      : "https://pep-back-production.up.railway.app";
 
-    form.addEventListener('submit', async (e) => {
+    async function handleAdminLogin(e) {
       e.preventDefault();
-      errorAlert.style.display = 'none';
+      const usernameInput = document.getElementById('username').value.trim();
+      const passwordInput = document.getElementById('password').value.trim();
+      const alertBox = document.getElementById('errorAlert');
+      const btn = document.getElementById('loginBtn');
 
-      const username = document.getElementById('username').value.trim();
-      const password = document.getElementById('password').value;
+      alertBox.style.display = 'none';
+      btn.innerText = 'Authenticating...';
+      btn.disabled = true;
 
       try {
-        const response = await fetch('/api/auth/admin-login', {
+        const response = await fetch(`${API_BASE}/api/auth/admin-login`, {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({ username, password })
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username: usernameInput, password: passwordInput })
         });
 
         const data = await response.json();
 
         if (response.ok && data.success) {
-          // Store token in localStorage
-          localStorage.setItem('adminToken', data.token || data.accessToken);
-          // Redirect to main admin dashboard page (adjust filename if your dashboard has a different name)
-          window.location.href = 'panel-dwhvfkn-fhf.ctrl.ctrlccf.fgycbg.html';
+          const token = data.token || data.accessToken || data.jwt;
+          if (token) {
+            localStorage.setItem('adminToken', token);
+            localStorage.setItem('token', token);
+          }
+          window.location.href = 'panel-dwhvfkn-fhf.ctrl.ctrlccf.fgycbg.html'; // Adjust to your admin control center filename if different
         } else {
-          errorAlert.textContent = data.message || 'Invalid admin credentials.';
-          errorAlert.style.display = 'block';
+          alertBox.innerText = data.message || 'Invalid username or password.';
+          alertBox.style.display = 'block';
+          btn.innerText = 'Login to Dashboard';
+          btn.disabled = false;
         }
       } catch (err) {
-        errorAlert.textContent = 'Network error. Please check your connection.';
-        errorAlert.style.display = 'block';
+        console.error('Login error:', err);
+        alertBox.innerText = 'Network error. Unable to reach backend server.';
+        alertBox.style.display = 'block';
+        btn.innerText = 'Login to Dashboard';
+        btn.disabled = false;
       }
-    });
+    }
   </script>
-
 </body>
 </html>
