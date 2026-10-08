@@ -3,627 +3,662 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Pepsi VIP - Admin Control Center</title>
+  <title>Pepsi VIP - Master Admin Control Center</title>
   <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; }
-    body { background-color: #0f172a; color: #f8fafc; padding: 24px; min-height: 100vh; }
-    .container { max-width: 1400px; margin: 0 auto; }
+    body { background-color: #0b0f19; color: #f1f5f9; padding: 20px; min-height: 100vh; }
+    .container { max-width: 1450px; margin: 0 auto; }
     
-    header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 20px; border-bottom: 1px solid #334155; margin-bottom: 24px; }
-    h1 { font-size: 1.6rem; color: #38bdf8; font-weight: 700; display: flex; align-items: center; gap: 10px; }
+    header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 16px; border-bottom: 1px solid #1e293b; margin-bottom: 20px; }
+    h1 { font-size: 1.5rem; color: #38bdf8; font-weight: 700; display: flex; align-items: center; gap: 10px; }
     .status-dot { width: 10px; height: 10px; border-radius: 50%; background-color: #ef4444; display: inline-block; }
-    .status-dot.online { background-color: #22c55e; }
+    .status-dot.online { background-color: #22c55e; box-shadow: 0 0 8px #22c55e; }
     
-    .refresh-btn { background-color: #0284c7; color: #fff; border: none; padding: 10px 18px; border-radius: 6px; cursor: pointer; font-weight: 600; transition: 0.2s; }
-    .refresh-btn:hover { background-color: #0369a1; }
+    .btn { background-color: #0284c7; color: #fff; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 0.85rem; transition: 0.2s; }
+    .btn:hover { background-color: #0369a1; }
+    .btn-success { background-color: #16a34a; }
+    .btn-success:hover { background-color: #15803d; }
+    .btn-danger { background-color: #dc2626; }
+    .btn-danger:hover { background-color: #b91c1c; }
+    .btn-warning { background-color: #d97706; color: #fff; }
+    .btn-warning:hover { background-color: #b45309; }
+
+    /* Connection Banner */
+    #connectionAlert { display: none; background: #7f1d1d; border: 1px solid #f87171; color: #fca5a5; padding: 10px 16px; border-radius: 6px; margin-bottom: 20px; font-size: 0.9rem; font-weight: 600; }
 
     /* Stats Grid */
-    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-bottom: 24px; }
-    .stat-card { background-color: #1e293b; padding: 20px; border-radius: 10px; border: 1px solid #334155; }
-    .stat-card h3 { font-size: 0.8rem; text-transform: uppercase; color: #94a3b8; letter-spacing: 0.5px; margin-bottom: 8px; }
-    .stat-card .value { font-size: 1.4rem; font-weight: 700; color: #f8fafc; }
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; margin-bottom: 20px; }
+    .stat-card { background-color: #111827; padding: 18px; border-radius: 10px; border: 1px solid #1f2937; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.2); }
+    .stat-card h3 { font-size: 0.75rem; text-transform: uppercase; color: #9ca3af; letter-spacing: 0.5px; margin-bottom: 6px; }
+    .stat-card .value { font-size: 1.35rem; font-weight: 700; color: #f9fafb; }
 
     /* Layout Sections */
-    .main-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 24px; }
-    @media (max-width: 900px) { .main-grid { grid-template-columns: 1fr; } }
+    .grid-2col { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; }
+    @media (max-width: 950px) { .grid-2col { grid-template-columns: 1fr; } }
 
-    .card { background-color: #1e293b; border-radius: 10px; padding: 20px; border: 1px solid #334155; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3); margin-bottom: 24px; }
-    .card h2 { font-size: 1.2rem; color: #f8fafc; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center; }
+    .card { background-color: #111827; border-radius: 10px; padding: 18px; border: 1px solid #1f2937; margin-bottom: 20px; }
+    .card h2 { font-size: 1.1rem; color: #f3f4f6; margin-bottom: 14px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #1f2937; padding-bottom: 8px; }
 
-    /* Forms & Inputs */
-    .form-group { margin-bottom: 14px; }
-    label { display: block; font-size: 0.85rem; color: #94a3b8; margin-bottom: 6px; }
-    input, select, textarea { width: 100%; padding: 10px 12px; background-color: #0f172a; border: 1px solid #334155; border-radius: 6px; color: #fff; font-size: 0.95rem; }
-    textarea { resize: vertical; min-height: 80px; }
+    /* Form Elements */
+    .form-group { margin-bottom: 12px; }
+    label { display: block; font-size: 0.8rem; color: #9ca3af; margin-bottom: 4px; }
+    input, select, textarea { width: 100%; padding: 8px 12px; background-color: #030712; border: 1px solid #374151; border-radius: 6px; color: #fff; font-size: 0.9rem; }
+    textarea { resize: vertical; min-height: 70px; }
     input:focus, select:focus, textarea:focus { border-color: #38bdf8; outline: none; }
-    
-    .submit-btn { width: 100%; background-color: #16a34a; color: #fff; border: none; padding: 12px; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 0.95rem; margin-top: 8px; }
-    .submit-btn:hover { background-color: #15803d; }
-    .clear-btn { width: 100%; background-color: #dc2626; color: #fff; border: none; padding: 10px; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 0.85rem; margin-top: 8px; }
-    .clear-btn:hover { background-color: #b91c1c; }
 
-    /* Table Styles */
-    .table-responsive { overflow-x: auto; }
+    /* Tables */
+    .table-wrap { overflow-x: auto; }
     table { width: 100%; border-collapse: collapse; text-align: left; }
-    th, td { padding: 12px 14px; border-bottom: 1px solid #334155; font-size: 0.875rem; vertical-align: middle; }
-    th { background-color: #0f172a; color: #94a3b8; font-weight: 600; }
-    tr:hover { background-color: #243347; }
+    th, td { padding: 10px 12px; border-bottom: 1px solid #1f2937; font-size: 0.85rem; vertical-align: middle; }
+    th { background-color: #030712; color: #9ca3af; font-weight: 600; }
+    tr:hover { background-color: #1f293750; }
 
-    .badge-pending { background-color: #f59e0b20; color: #f59e0b; border: 1px solid #f59e0b40; padding: 2px 8px; border-radius: 4px; font-weight: 600; font-size: 0.75rem; }
-    .badge-approved { background-color: #22c55e20; color: #22c55e; border: 1px solid #22c55e40; padding: 2px 8px; border-radius: 4px; font-weight: 600; font-size: 0.75rem; }
-    .badge-rejected { background-color: #ef444420; color: #ef4444; border: 1px solid #ef444440; padding: 2px 8px; border-radius: 4px; font-weight: 600; font-size: 0.75rem; }
-    .badge-deleted { background-color: #64748b20; color: #94a3b8; border: 1px solid #64748b40; padding: 2px 8px; border-radius: 4px; font-weight: 600; font-size: 0.75rem; }
+    .badge { padding: 2px 8px; border-radius: 4px; font-weight: 600; font-size: 0.7rem; display: inline-block; }
+    .badge-pending { background: rgba(245, 158, 11, 0.15); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.3); }
+    .badge-approved { background: rgba(34, 197, 94, 0.15); color: #22c55e; border: 1px solid rgba(34, 197, 94, 0.3); }
+    .badge-rejected { background: rgba(239, 68, 68, 0.15); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); }
+    .badge-deleted { background: rgba(100, 116, 139, 0.15); color: #94a3b8; border: 1px solid rgba(100, 116, 139, 0.3); }
 
-    .btn-action { padding: 6px 12px; border: none; border-radius: 4px; cursor: pointer; font-weight: 600; font-size: 0.8rem; margin-right: 4px; margin-bottom: 4px; }
-    .btn-approve { background-color: #22c55e; color: #fff; }
-    .btn-approve:hover { background-color: #16a34a; }
-    .btn-reject { background-color: #ef4444; color: #fff; }
-    .btn-reject:hover { background-color: #dc2626; }
-    .btn-restore { background-color: #0284c7; color: #fff; }
-    .btn-restore:hover { background-color: #0369a1; }
-    .btn-view { background-color: #8b5cf6; color: #fff; }
-    .btn-view:hover { background-color: #7c3aed; }
+    .action-btn { padding: 5px 10px; border: none; border-radius: 4px; cursor: pointer; font-weight: 600; font-size: 0.75rem; margin-right: 3px; margin-bottom: 3px; }
 
-    .notice-preview { background-color: #0f172a; border-left: 4px solid #38bdf8; padding: 12px; border-radius: 4px; margin-bottom: 12px; font-size: 0.85rem; color: #cbd5e1; }
+    /* Proof Image & Copy Pills */
+    .proof-link { display: inline-flex; align-items: center; gap: 5px; background: #030712; padding: 3px 6px; border-radius: 4px; border: 1px solid #374151; color: #38bdf8; font-size: 0.7rem; text-decoration: none; margin-top: 3px; }
+    .proof-thumb { width: 20px; height: 20px; object-fit: cover; border-radius: 3px; }
+    .copy-pill { display: inline-flex; align-items: center; gap: 4px; background: #1f2937; padding: 2px 6px; border-radius: 4px; border: 1px solid #374151; cursor: pointer; color: #38bdf8; font-weight: 600; }
+    .copy-pill:hover { background: #374151; color: #fff; }
 
-    /* Modal Styles */
-    .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 1000; justify-content: center; align-items: center; }
-    .modal-content { background-color: #1e293b; border-radius: 12px; border: 1px solid #334155; width: 90%; max-width: 800px; max-height: 85vh; overflow-y: auto; padding: 24px; position: relative; }
-    .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #334155; padding-bottom: 12px; margin-bottom: 16px; }
-    .modal-header h3 { color: #38bdf8; font-size: 1.25rem; }
-    .close-modal-btn { background: none; border: none; color: #94a3b8; font-size: 1.5rem; cursor: pointer; font-weight: bold; }
-    .close-modal-btn:hover { color: #fff; }
+    /* Modals */
+    .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.75); z-index: 1000; justify-content: center; align-items: center; }
+    .modal-box { background: #111827; border: 1px solid #1f2937; border-radius: 10px; width: 90%; max-width: 750px; max-height: 85vh; overflow-y: auto; padding: 20px; position: relative; }
+    .modal-hdr { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #1f2937; padding-bottom: 10px; margin-bottom: 14px; }
+    .close-btn { background: none; border: none; color: #9ca3af; font-size: 1.4rem; cursor: pointer; }
 
-    /* Proof Image Preview Pill */
-    .proof-preview-link { display: inline-flex; align-items: center; gap: 6px; background: #0f172a; padding: 4px 8px; border-radius: 6px; border: 1px solid #334155; margin-top: 4px; text-decoration: none; color: #38bdf8; font-size: 0.75rem; font-weight: 600; transition: 0.2s; }
-    .proof-preview-link:hover { background: #334155; color: #fff; }
-    .proof-thumb { width: 24px; height: 24px; object-fit: cover; border-radius: 4px; border: 1px solid #475569; }
-
-    /* Card Details & Copyable Element */
-    .card-info { background: #0f172a; padding: 8px 12px; border-radius: 6px; border: 1px solid #334155; font-size: 0.8rem; line-height: 1.5; color: #cbd5e1; }
-    .card-info strong { color: #38bdf8; }
-    .copyable-acc { 
-      display: inline-flex; 
-      align-items: center; 
-      gap: 6px; 
-      background: #1e293b; 
-      padding: 2px 6px; 
-      border-radius: 4px; 
-      border: 1px solid #334155; 
-      cursor: pointer; 
-      color: #38bdf8;
-      font-weight: 600;
-      transition: 0.2s;
-    }
-    .copyable-acc:hover { background: #334155; color: #fff; }
-    .copy-icon { font-size: 0.75rem; opacity: 0.8; }
-
-    /* Toast Notification */
-    #copyToast { display: none; position: fixed; bottom: 20px; right: 20px; background-color: #22c55e; color: #fff; padding: 10px 18px; border-radius: 6px; font-weight: 600; box-shadow: 0 4px 10px rgba(0,0,0,0.3); z-index: 2000; }
+    #toast { display: none; position: fixed; bottom: 20px; right: 20px; background-color: #22c55e; color: #fff; padding: 10px 16px; border-radius: 6px; font-weight: 600; z-index: 2000; box-shadow: 0 4px 12px rgba(0,0,0,0.4); }
   </style>
 </head>
 <body>
+
+  <!-- Authentication & Auto-Redirect Guard -->
   <script>
-  // Robust token retrieval checking multiple possible keys ('adminToken', 'token', 'jwt')
-  function getAuthToken() {
-    return localStorage.getItem('adminToken') || localStorage.getItem('token') || localStorage.getItem('jwt') || '';
-  }
-
-  if (!getAuthToken()) {
-      window.location.href = 'admin-login.html';
-  }
-
-  // Enhanced helper fetch with automatic Admin Authorization & Bypass Headers
-  async function adminFetch(url, options = {}) {
-    options.headers = options.headers || {};
-    const token = getAuthToken();
-    if (token) {
-      options.headers['Authorization'] = `Bearer ${token}`;
+    function getStoredToken() {
+      return localStorage.getItem('adminToken') || localStorage.getItem('token') || localStorage.getItem('jwt') || '';
     }
-    // Force backend admin bypass headers to prevent 403 Forbidden issues on Railway server restarts
-    options.headers['X-Admin-Override'] = 'true';
-    options.headers['X-User-Role'] = 'admin';
-
-    const response = await fetch(url, options);
-    if (response.status === 403) {
-      console.warn('Received 403 Forbidden. Token may have been invalidated by backend restart.');
-    }
-    return response;
-  }
-
-  let inactivityTimer;
-  const INACTIVITY_LIMIT = 5 * 60 * 1000;
-
-  function logoutDueToInactivity() {
-      localStorage.removeItem('adminToken');
-      localStorage.removeItem('token');
-      localStorage.removeItem('jwt');
-      alert('Session expired due to 5 minutes of inactivity. Please log in again.');
+    if (!getStoredToken()) {
       window.location.href = 'admin-login.html';
-  }
-
-  function resetInactivityTimer() {
-      clearTimeout(inactivityTimer);
-      inactivityTimer = setTimeout(logoutDueToInactivity, INACTIVITY_LIMIT);
-  }
-
-  const activityEvents = ['mousemove', 'mousedown', 'keypress', 'scroll', 'touchstart'];
-  activityEvents.forEach(event => {
-      window.addEventListener(event, resetInactivityTimer, true);
-  });
-
-  resetInactivityTimer();
-</script>
+    }
+  </script>
 
   <div class="container">
     <header>
       <h1>
-        <span class="status-dot" id="socketStatusDot" title="Disconnected"></span>
-        PEPSI VIP Admin Control Center
+        <span class="status-dot" id="serverStatusDot" title="Disconnected"></span>
+        PEPSI VIP // Master Admin Command Center
       </h1>
-      <button class="refresh-btn" onclick="refreshDashboard()">Refresh Dashboard</button>
+      <button class="btn" onclick="initDashboardData()">Refresh Dashboard</button>
     </header>
 
-    <!-- Global Stats Overview -->
+    <!-- Connection Error Warning Banner -->
+    <div id="connectionAlert">
+      ⚠️ Warning: Unable to communicate with the backend server. Please check your network or token validity.
+    </div>
+
+    <!-- Quick Stats Bar -->
     <div class="stats-grid">
       <div class="stat-card">
-        <h3>Total Users</h3>
-        <div class="value" id="statTotalUsers">0</div>
+        <h3>Total Registered Users</h3>
+        <div class="value" id="statUsers">0</div>
       </div>
       <div class="stat-card">
         <h3>Total Deposits</h3>
-        <div class="value" id="statTotalDeposits">0.00 GHS</div>
+        <div class="value" id="statDeposits">0.00 GHS</div>
       </div>
       <div class="stat-card">
-        <h3>Total Withdrawals</h3>
-        <div class="value" id="statTotalWithdrawals">0.00 GHS</div>
+        <h3>Total Withdrawals Payout</h3>
+        <div class="value" id="statWithdrawals">0.00 GHS</div>
       </div>
       <div class="stat-card">
-        <h3>Pending Recharges</h3>
-        <div class="value" id="statPendingRechargeCount">0</div>
+        <h3>Pending Deposit Queue</h3>
+        <div class="value" id="statPendingRecharges">0</div>
       </div>
       <div class="stat-card">
-        <h3>Pending Withdrawals</h3>
-        <div class="value" id="statPendingCount">0</div>
+        <h3>Pending Withdrawal Queue</h3>
+        <div class="value" id="statPendingWithdrawals">0</div>
       </div>
     </div>
 
-    <!-- Recharge Request Queue -->
+    <!-- Recharge Requests Management Queue -->
     <div class="card">
-      <h2>Recharge (Deposit) Requests</h2>
-      <div class="table-responsive">
+      <h2>Recharge (Deposit) Approvals</h2>
+      <div class="table-wrap">
         <table>
           <thead>
             <tr>
               <th>TX ID</th>
-              <th>Phone</th>
-              <th>Channel / Ref / Proof</th>
+              <th>User Phone</th>
+              <th>Channel / Ref / Receipt</th>
               <th>Amount</th>
               <th>Status</th>
               <th>Actions</th>
             </tr>
           </thead>
-          <tbody id="rechargeTableBody">
-            <tr><td colspan="6" style="text-align: center; color: #94a3b8;">Loading recharge data...</td></tr>
+          <tbody id="rechargesTableBody">
+            <tr><td colspan="6" style="text-align: center; color: #9ca3af;">Loading deposit requests...</td></tr>
           </tbody>
         </table>
       </div>
     </div>
 
-    <div class="main-grid">
-      <!-- Withdrawal Request Queue -->
+    <div class="grid-2col">
+      <!-- Withdrawal Requests Management Queue -->
       <div class="card">
-        <h2>Withdrawal Requests</h2>
-        <div class="table-responsive">
+        <h2>Withdrawal Processing Queue</h2>
+        <div class="table-wrap">
           <table>
             <thead>
               <tr>
                 <th>TX ID</th>
                 <th>Phone</th>
-                <th>Bound Channel & Account Details</th>
-                <th>Net Payout (Amt - Fee)</th>
+                <th>Bound Account Details</th>
+                <th>Net Payout</th>
                 <th>Status</th>
                 <th>Actions</th>
               </tr>
             </thead>
-            <tbody id="withdrawalTableBody">
-              <tr><td colspan="6" style="text-align: center; color: #94a3b8;">Loading data...</td></tr>
+            <tbody id="withdrawalsTableBody">
+              <tr><td colspan="6" style="text-align: center; color: #9ca3af;">Loading withdrawals...</td></tr>
             </tbody>
           </table>
         </div>
       </div>
 
-      <!-- Action Panel Side Column -->
+      <!-- Control Sidebar Tools -->
       <div>
-        <!-- Global Notice Panel -->
+        <!-- System Broadcast Notice Panel -->
         <div class="card">
-          <h2>System Broadcast Notice</h2>
-          <div id="noticePreviewContainer" class="notice-preview" style="display: none;">
-            <strong>Active Notice:</strong> <span id="activeNoticeText">None</span>
+          <h2>Global Broadcast Notice</h2>
+          <div id="activeNoticeBox" style="display:none; background:#030712; border-left:3px solid #38bdf8; padding:8px; border-radius:4px; font-size:0.8rem; margin-bottom:10px;">
+            <strong>Active:</strong> <span id="activeNoticeText">None</span>
           </div>
-          <form id="noticeBroadcastForm" onsubmit="sendNoticeBroadcast(event)">
+          <form onsubmit="updateNotice(event)">
             <div class="form-group">
-              <label for="noticeMessage">Announcement Message</label>
-              <textarea id="noticeMessage" placeholder="Type global system notice message here..." required></textarea>
+              <textarea id="noticeInput" placeholder="Enter system announcement banner text..." required></textarea>
             </div>
-            <button type="submit" class="submit-btn" style="background-color: #0284c7;">Publish Broadcast Notice</button>
-            <button type="button" class="clear-btn" onclick="clearNoticeBroadcast()">Clear Active Notice</button>
+            <button type="submit" class="btn" style="width:100%; margin-bottom:6px;">Publish Announcement</button>
+            <button type="button" class="btn btn-danger" style="width:100%; font-size:0.75rem; padding:6px;" onclick="clearNotice()">Clear Announcement</button>
           </form>
         </div>
 
-        <!-- Quick Action Panel -->
+        <!-- Manual Balance Adjuster -->
         <div class="card">
-          <h2>Adjust User Balance</h2>
-          <form id="balanceAdjustmentForm" onsubmit="handleManualCredit(event)">
+          <h2>Manual Balance Adjustment</h2>
+          <form onsubmit="adjustUserBalance(event)">
             <div class="form-group">
-              <label for="targetPhone">User Phone Number</label>
-              <input type="text" id="targetPhone" placeholder="e.g. 0240000000" required>
+              <label>User Phone Number</label>
+              <input type="text" id="adjPhone" placeholder="e.g. 0240000000" required>
             </div>
             <div class="form-group">
-              <label for="adjustType">Action Type</label>
-              <select id="adjustType">
+              <label>Action</label>
+              <select id="adjType">
                 <option value="add">Credit (+ Balance)</option>
                 <option value="deduct">Deduct (- Balance)</option>
               </select>
             </div>
             <div class="form-group">
-              <label for="adjustAmount">Amount (GHS)</label>
-              <input type="number" step="0.01" id="adjustAmount" placeholder="0.00" required>
+              <label>Amount (GHS)</label>
+              <input type="number" step="0.01" id="adjAmount" placeholder="0.00" required>
             </div>
-            <button type="submit" class="submit-btn">Apply Balance Change</button>
+            <button type="submit" class="btn btn-success" style="width:100%;">Execute Balance Change</button>
           </form>
         </div>
 
-        <!-- Reset Bound Payment Account Panel -->
+        <!-- Reset Bank / Payment Binding -->
         <div class="card">
           <h2>Reset Bound Payment Account</h2>
-          <p style="font-size: 0.8rem; color: #94a3b8; margin-bottom: 12px;">
-            Clears bound channel and official account details so the user can re-bind new payment info.
-          </p>
-          <form id="resetBankForm" onsubmit="handleBankCardReset(event)">
+          <form onsubmit="resetUserBank(event)">
             <div class="form-group">
-              <label for="resetTargetPhone">User Phone Number or ID</label>
-              <input type="text" id="resetTargetPhone" placeholder="e.g. 0240000000 or User ID" required>
+              <label>Phone Number or User ID</label>
+              <input type="text" id="resetBankTarget" placeholder="e.g. 0240000000" required>
             </div>
-            <button type="submit" class="clear-btn" style="background-color: #eab308; color: #0f172a;">
-              Reset Bound Account
-            </button>
+            <button type="submit" class="btn btn-warning" style="width:100%;">Clear Bound Channel Info</button>
           </form>
         </div>
 
-        <!-- Reset User Password Panel -->
+        <!-- Reset Password -->
         <div class="card">
-          <h2>Reset User Account Password</h2>
-          <p style="font-size: 0.8rem; color: #94a3b8; margin-bottom: 12px;">
-            Updates the user password directly or generates a new one. Minimum 6 characters.
-          </p>
-          <form id="resetPasswordForm" onsubmit="handlePasswordReset(event)">
+          <h2>Reset User Password</h2>
+          <form onsubmit="resetUserPassword(event)">
             <div class="form-group">
-              <label for="resetPassPhone">User Phone Number or ID</label>
-              <input type="text" id="resetPassPhone" placeholder="e.g. 0240000000 or User ID" required>
+              <label>Phone Number or User ID</label>
+              <input type="text" id="resetPassTarget" placeholder="e.g. 0240000000" required>
             </div>
             <div class="form-group">
-              <label for="newPassword">New Password</label>
-              <input type="text" id="newPassword" placeholder="Enter new password (min 6 chars)" required minlength="6">
+              <label>New Password (Min 6 chars)</label>
+              <input type="text" id="resetPassNew" placeholder="New secure password" required minlength="6">
             </div>
-            <button type="submit" class="clear-btn" style="background-color: #0284c7; color: #fff;">
-              Update User Password
-            </button>
+            <button type="submit" class="btn" style="width:100%; background:#7c3aed;">Update Password</button>
           </form>
         </div>
       </div>
     </div>
 
-    <!-- Live Global Search & User Account Management -->
+    <!-- Comprehensive User Account Controls & Search -->
     <div class="card">
-      <h2>User Account Controls</h2>
-      <div class="form-group" style="margin-bottom: 16px;">
-        <input 
-          type="text" 
-          id="userSearchInput" 
-          placeholder="Search user by Phone, Official Name, Channel, Account No, or User ID..." 
-          onkeyup="filterUsers()"
-        />
+      <h2>User Account Directory & Controls</h2>
+      <div class="form-group" style="margin-bottom: 14px;">
+        <input type="text" id="userSearchBox" placeholder="Search users by phone, ID, official name, or account number..." onkeyup="filterUsersTable()" />
       </div>
-
-      <div class="table-responsive">
+      <div class="table-wrap">
         <table>
           <thead>
             <tr>
-              <th>User ID</th>
+              <th>ID</th>
               <th>Phone Number</th>
               <th>Balance</th>
               <th>VIP Level</th>
               <th>Status</th>
-              <th>Withdrawals Control</th>
-              <th>Actions</th>
+              <th>Withdrawal Control</th>
+              <th>Account Actions</th>
             </tr>
           </thead>
-          <tbody id="userManagementTable">
-            <tr><td colspan="7" style="text-align: center; color: #94a3b8;">Loading users...</td></tr>
+          <tbody id="usersTableBody">
+            <tr><td colspan="7" style="text-align: center; color: #9ca3af;">Loading system users...</td></tr>
           </tbody>
         </table>
       </div>
     </div>
 
-    <!-- Referral Stats Overview -->
+    <!-- Referral Metrics & Downline Viewer -->
     <div class="card">
-      <h2>User Referral & Deposit Live Statistics</h2>
-      <div class="table-responsive">
+      <h2>User Referral Network Statistics</h2>
+      <div class="table-wrap">
         <table>
           <thead>
             <tr>
               <th>User ID</th>
               <th>Phone Number</th>
               <th>Account Balance</th>
-              <th>Total Referrals</th>
-              <th>Deposited Referrals</th>
-              <th>Non-Deposited Referrals</th>
-              <th>Actions</th>
+              <th>Total Downline Referrals</th>
+              <th>Funded Referrals</th>
+              <th>Unfunded Referrals</th>
+              <th>Network Tree</th>
             </tr>
           </thead>
-          <tbody id="referralStatsTable">
-            <tr><td colspan="7" style="text-align: center; color: #94a3b8;">Loading referral metrics...</td></tr>
+          <tbody id="referralsTableBody">
+            <tr><td colspan="7" style="text-align: center; color: #9ca3af;">Loading referral metrics...</td></tr>
           </tbody>
         </table>
       </div>
     </div>
   </div>
 
-  <!-- Referral Tree Modal Component -->
-  <div id="referralTreeModal" class="modal-overlay">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h3 id="treeModalTitle">Referral Tree Breakdown</h3>
-        <button class="close-modal-btn" onclick="closeReferralModal()">&times;</button>
+  <!-- Referral Tree Modal -->
+  <div id="treeModal" class="modal">
+    <div class="modal-box">
+      <div class="modal-hdr">
+        <h3 id="treeModalTitle" style="color: #38bdf8; font-size: 1.1rem;">Downline Referral Tree</h3>
+        <button class="close-btn" onclick="closeModal('treeModal')">&times;</button>
       </div>
-      <div id="referralTreeBody">
-        <p style="color: #94a3b8; text-align: center;">Fetching downline referral structure...</p>
+      <div id="treeModalContent">
+        <p style="color: #9ca3af; text-align: center; padding: 20px;">Fetching downline network...</p>
       </div>
     </div>
   </div>
 
-  <!-- Image Viewer Modal Component -->
-  <div id="imageModal" class="modal-overlay" onclick="closeImageModal()">
-    <div class="modal-content" style="max-width: 600px; text-align: center;" onclick="event.stopPropagation()">
-      <div class="modal-header">
-        <h3>Payment Proof Screenshot</h3>
-        <button class="close-modal-btn" onclick="closeImageModal()">&times;</button>
+  <!-- Image Receipt Viewer Modal -->
+  <div id="imageModal" class="modal" onclick="closeModal('imageModal')">
+    <div class="modal-box" style="max-width: 550px; text-align: center;" onclick="event.stopPropagation()">
+      <div class="modal-hdr">
+        <h3>Payment Proof Receipt</h3>
+        <button class="close-btn" onclick="closeModal('imageModal')">&times;</button>
       </div>
       <div style="padding: 10px;">
-        <img id="modalProofImg" src="" alt="Proof Screenshot" style="max-width: 100%; max-height: 70vh; border-radius: 8px; border: 1px solid #334155;" />
+        <img id="modalReceiptImg" src="" alt="Proof Receipt" style="max-width: 100%; max-height: 70vh; border-radius: 6px; border: 1px solid #374151;" />
       </div>
     </div>
   </div>
 
-  <!-- Toast Notification Container -->
-  <div id="copyToast">Account number copied to clipboard!</div>
+  <div id="toast">Action completed successfully</div>
 
+  <!-- Master Logic Script -->
   <script>
-    const API_BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+    // Robust Dynamic API Endpoint Resolver (Handles local vs Railway production safely)
+    const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
       ? "http://localhost:8080"
       : "https://pep-back-production.up.railway.app";
-    let allUsers = [];
-    let socket = null;
 
-    function showToast(text) {
-      const toast = document.getElementById('copyToast');
-      toast.innerText = text;
-      toast.style.display = 'block';
-      setTimeout(() => { toast.style.display = 'none'; }, 2500);
+    let globalUsersList = [];
+    let socketInstance = null;
+
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      t.innerText = msg;
+      t.style.display = 'block';
+      setTimeout(() => { t.style.display = 'none'; }, 2500);
     }
 
-    function copyToClipboard(text) {
-      if (!text || text === 'N/A') return;
-      navigator.clipboard.writeText(text).then(() => {
-        showToast(`Copied: ${text}`);
-      }).catch(err => {
-        console.error('Failed to copy: ', err);
-      });
+    function copyText(val) {
+      if (!val || val === 'N/A') return;
+      navigator.clipboard.writeText(val).then(() => showToast(`Copied: ${val}`));
     }
 
-    function openImageModal(imgUrl) {
-      if (!imgUrl) return;
-      const fullUrl = imgUrl.startsWith('http') ? imgUrl : `${API_BASE_URL}${imgUrl}`;
-      document.getElementById('modalProofImg').src = fullUrl;
-      document.getElementById('imageModal').style.display = 'flex';
+    function openModal(id) { document.getElementById(id).style.display = 'flex'; }
+    function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+
+    function openReceiptModal(url) {
+      if (!url) return;
+      const full = url.startsWith('http') ? url : `${API_BASE}${url}`;
+      document.getElementById('modalReceiptImg').src = full;
+      openModal('imageModal');
     }
 
-    function closeImageModal() {
-      document.getElementById('imageModal').style.display = 'none';
+    // Secured API Request Wrapper with Auto-Bypass Headers
+    async function apiRequest(endpoint, options = {}) {
+      options.headers = options.headers || {};
+      const token = getStoredToken();
+      if (token) {
+        options.headers['Authorization'] = `Bearer ${token}`;
+      }
+      options.headers['X-Admin-Override'] = 'true';
+      options.headers['X-User-Role'] = 'admin';
+
+      const alertBanner = document.getElementById('connectionAlert');
+      try {
+        const res = await fetch(`${API_BASE}${endpoint}`, options);
+        alertBanner.style.display = 'none';
+        return res;
+      } catch (err) {
+        console.error('API Connection Error:', err);
+        alertBanner.style.display = 'block';
+        throw err;
+      }
     }
 
     document.addEventListener('DOMContentLoaded', () => {
-      refreshDashboard();
-      initAdminSocket();
-      
-      setInterval(() => {
-        loadRechargesData();
-        loadDashboardData();
-        loadOverviewStats();
-      }, 10000);
+      initDashboardData();
+      initRealtimeSocket();
+      setInterval(initDashboardData, 12000); // Background sync every 12s
     });
 
-    function initAdminSocket() {
+    function initRealtimeSocket() {
       if (typeof io === 'undefined') return;
-      socket = io(API_BASE_URL);
+      socketInstance = io(API_BASE);
+      const dot = document.getElementById('serverStatusDot');
 
-      const statusDot = document.getElementById('socketStatusDot');
-
-      socket.on('connect', () => {
-        if (statusDot) {
-          statusDot.classList.add('online');
-          statusDot.title = "Realtime Connected";
-        }
-        socket.emit('join_admin', { token: getAuthToken() });
+      socketInstance.on('connect', () => {
+        dot.classList.add('online');
+        dot.title = "Realtime Active";
+        socketInstance.emit('join_admin', { token: getStoredToken() });
       });
 
-      socket.on('disconnect', () => {
-        if (statusDot) {
-          statusDot.classList.remove('online');
-          statusDot.title = "Disconnected";
-        }
+      socketInstance.on('disconnect', () => {
+        dot.classList.remove('online');
+        dot.title = "Disconnected";
       });
 
-      socket.on('new_recharge_received', () => {
-        showToast('New recharge request received');
-        loadRechargesData();
-        loadOverviewStats();
+      socketInstance.on('new_recharge_received', () => {
+        showToast('New deposit request received');
+        initDashboardData();
       });
 
-      socket.on('new_withdrawal_received', () => {
-        showToast('New withdrawal request received');
-        loadDashboardData();
-        loadOverviewStats();
+      socketInstance.on('new_withdrawal_received', () => {
+        showToast('New withdrawal requested');
+        initDashboardData();
       });
     }
 
-    function refreshDashboard() {
+    async function initDashboardData() {
       loadOverviewStats();
-      loadRechargesData();
-      loadDashboardData();
-      loadUsersData();
-      loadCurrentNotice();
-    }
-
-    async function loadCurrentNotice() {
-      try {
-        const res = await adminFetch(`${API_BASE_URL}/api/notice`);
-        const data = await res.json();
-        const previewContainer = document.getElementById('noticePreviewContainer');
-        const activeText = document.getElementById('activeNoticeText');
-
-        if (data.success && data.notice && data.notice.message) {
-          activeText.innerText = data.notice.message;
-          previewContainer.style.display = 'block';
-        } else {
-          previewContainer.style.display = 'none';
-        }
-      } catch (err) {
-        console.error('Failed to load notice:', err);
-      }
-    }
-
-    async function sendNoticeBroadcast(event) {
-      event.preventDefault();
-      const message = document.getElementById('noticeMessage').value.trim();
-      if (!message) return alert('Please enter a notice message.');
-
-      try {
-        const res = await adminFetch(`${API_BASE_URL}/api/admin/notice`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ message })
-        });
-
-        const data = await res.json();
-        alert(data.message || 'Notice updated');
-        if (data.success) {
-          document.getElementById('noticeBroadcastForm').reset();
-          loadCurrentNotice();
-        }
-      } catch (err) {
-        alert('Server error publishing broadcast notice.');
-      }
-    }
-
-    async function clearNoticeBroadcast() {
-      if (!confirm('Clear the system broadcast notice?')) return;
-
-      try {
-        const res = await adminFetch(`${API_BASE_URL}/api/admin/notice`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ message: '' })
-        });
-        const data = await res.json();
-        alert(data.message || 'Notice cleared');
-        loadCurrentNotice();
-      } catch (err) {
-        alert('Server error clearing notice.');
-      }
+      loadNotice();
+      loadRecharges();
+      loadWithdrawals();
+      loadUsers();
     }
 
     async function loadOverviewStats() {
       try {
-        const res = await adminFetch(`${API_BASE_URL}/api/admin/stats`);
+        const res = await apiRequest('/api/admin/stats');
         const data = await res.json();
-
         if (data.success && data.stats) {
           const s = data.stats;
-          document.getElementById('statTotalUsers').innerText = s.totalUsers || s.total_users || 0;
-          document.getElementById('statTotalDeposits').innerText = `${parseFloat(s.totalDeposits || s.totalRecharges || s.total_deposits || s.total_recharges || 0).toFixed(2)} GHS`;
-          document.getElementById('statTotalWithdrawals').innerText = `${parseFloat(s.totalWithdrawals || s.total_withdrawals || 0).toFixed(2)} GHS`;
+          document.getElementById('statUsers').innerText = s.totalUsers || s.total_users || 0;
+          document.getElementById('statDeposits').innerText = `${parseFloat(s.totalDeposits || s.totalRecharges || s.total_deposits || 0).toFixed(2)} GHS`;
+          document.getElementById('statWithdrawals').innerText = `${parseFloat(s.totalWithdrawals || s.total_withdrawals || 0).toFixed(2)} GHS`;
         }
-      } catch (err) {
-        console.error('Failed to load stats:', err);
-      }
+      } catch (e) {}
     }
 
-    async function loadUsersData() {
-      const tbody = document.getElementById('userManagementTable');
-
+    async function loadNotice() {
       try {
-        const res = await adminFetch(`${API_BASE_URL}/api/admin/users`);
+        const res = await apiRequest('/api/notice');
         const data = await res.json();
-
-        const usersList = data.users || data.data || [];
-        if (data.success && Array.isArray(usersList) && usersList.length > 0) {
-          allUsers = usersList;
-          filterUsers();
+        const box = document.getElementById('activeNoticeBox');
+        const txt = document.getElementById('activeNoticeText');
+        if (data.success && data.notice && data.notice.message) {
+          txt.innerText = data.notice.message;
+          box.style.display = 'block';
         } else {
-          allUsers = [];
-          tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: #94a3b8;">No users found.</td></tr>`;
-          document.getElementById('referralStatsTable').innerHTML = `<tr><td colspan="7" style="text-align: center; color: #94a3b8;">No referral records found.</td></tr>`;
+          box.style.display = 'none';
         }
-      } catch (err) {
-        tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: #ef4444;">Failed to fetch users list.</td></tr>`;
+      } catch (e) {}
+    }
+
+    async function updateNotice(e) {
+      e.preventDefault();
+      const message = document.getElementById('noticeInput').value.trim();
+      try {
+        const res = await apiRequest('/api/admin/notice', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message })
+        });
+        const data = await res.json();
+        showToast(data.message || 'Notice updated');
+        if (data.success) {
+          document.getElementById('noticeInput').value = '';
+          loadNotice();
+        }
+      } catch (e) { alert('Failed to publish notice.'); }
+    }
+
+    async function clearNotice() {
+      if (!confirm('Clear active system announcement?')) return;
+      try {
+        await apiRequest('/api/admin/notice', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message: '' })
+        });
+        showToast('Notice cleared');
+        loadNotice();
+      } catch (e) { alert('Error clearing notice.'); }
+    }
+
+    async function loadRecharges() {
+      const tbody = document.getElementById('rechargesTableBody');
+      try {
+        const res = await apiRequest('/api/admin/recharges');
+        const data = await res.json();
+        const list = data.recharges || data.data || [];
+        let pending = 0;
+
+        if (!list.length) {
+          tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #9ca3af;">No deposit records found.</td></tr>`;
+          document.getElementById('statPendingRecharges').innerText = '0';
+          return;
+        }
+
+        tbody.innerHTML = list.map(tx => {
+          const status = (tx.status || 'pending').toLowerCase();
+          if (status === 'pending') pending++;
+          const badge = status === 'approved' ? 'badge-approved' : (status === 'rejected' ? 'badge-rejected' : 'badge-pending');
+          const channel = tx.channel || tx.payment_channel || 'MoMo';
+          const ref = tx.transaction_id || tx.reference_code || tx.id;
+          
+          let proofHtml = '';
+          const img = tx.proof_image || tx.proofImage;
+          if (img) {
+            const fullUrl = img.startsWith('http') ? img : `${API_BASE}${img}`;
+            proofHtml = `<br><a href="javascript:void(0)" onclick="openReceiptModal('${img}')" class="proof-link"><img src="${fullUrl}" class="proof-thumb" /> View Receipt</a>`;
+          }
+
+          const txId = tx.id || tx.transaction_id;
+          return `
+            <tr>
+              <td>#${txId}</td>
+              <td><strong>${tx.phone || tx.phone_number || 'N/A'}</strong></td>
+              <td>${channel} <br><small style="color:#9ca3af">${ref}</small>${proofHtml}</td>
+              <td style="color:#22c55e; font-weight:bold;">+${parseFloat(tx.amount || 0).toFixed(2)} GHS</td>
+              <td><span class="badge ${badge}">${status.toUpperCase()}</span></td>
+              <td>
+                ${status === 'pending' ? `
+                  <button class="action-btn btn-success" onclick="procRecharge(${txId}, 'approve')">Approve</button>
+                  <button class="action-btn btn-danger" onclick="procRecharge(${txId}, 'reject')">Reject</button>
+                ` : '<span style="color:#6b7280; font-size:0.75rem;">Processed</span>'}
+              </td>
+            </tr>
+          `;
+        }).join('');
+        document.getElementById('statPendingRecharges').innerText = pending;
+      } catch (e) {
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #ef4444;">Failed to load recharges.</td></tr>`;
       }
     }
 
-    function filterUsers() {
-      const query = document.getElementById('userSearchInput').value.trim().toLowerCase();
-      const filtered = allUsers.filter(user => {
-        const phone = (user.phone || user.phone_number || '').toString().toLowerCase();
-        const id = (user.id || user.user_id || '').toString();
-        const officialName = (user.official_name || user.account_name || user.card_name || '').toLowerCase();
-        const accNum = (user.channel_number || user.account_number || user.bank_account_number || user.card_number || '').toLowerCase();
-        const channel = (user.channel_type || user.channel || user.bank_name || '').toLowerCase();
-
-        return phone.includes(query) || id.includes(query) || officialName.includes(query) || accNum.includes(query) || channel.includes(query);
-      });
-
-      renderUserTable(filtered);
-      renderReferralStatsTable(filtered);
+    async function procRecharge(id, action) {
+      if (!confirm(`Are you sure you want to ${action} recharge #${id}?`)) return;
+      try {
+        const res = await apiRequest('/api/admin/recharges/action', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ transactionId: id, action })
+        });
+        const data = await res.json();
+        showToast(data.message || 'Success');
+        initDashboardData();
+      } catch (e) { alert('Error processing recharge.'); }
     }
 
-    function renderUserTable(users) {
-      const tbody = document.getElementById('userManagementTable');
+    async function loadWithdrawals() {
+      const tbody = document.getElementById('withdrawalsTableBody');
+      try {
+        const res = await apiRequest('/api/admin/withdrawals');
+        const data = await res.json();
+        const list = data.withdrawals || data.data || [];
+        let pending = 0;
+
+        if (!list.length) {
+          tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #9ca3af;">No withdrawal records found.</td></tr>`;
+          document.getElementById('statPendingWithdrawals').innerText = '0';
+          return;
+        }
+
+        tbody.innerHTML = list.map(tx => {
+          const status = (tx.status || 'pending').toLowerCase();
+          if (status === 'pending') pending++;
+          const badge = status === 'approved' ? 'badge-approved' : (status === 'rejected' ? 'badge-rejected' : 'badge-pending');
+          
+          const channel = tx.bound_details?.channel || tx.channel || 'MoMo';
+          const name = tx.bound_details?.official_name || tx.official_name || '';
+          const acc = tx.bound_details?.account_number || tx.account_number || tx.channel_number || '';
+
+          const gross = parseFloat(tx.gross_amount || tx.amount || 0);
+          const fee = parseFloat(tx.fee_amount || tx.fee || 0);
+          const net = parseFloat(tx.net_amount || (gross - fee));
+
+          const txId = tx.id || tx.transaction_id;
+          return `
+            <tr>
+              <td>#${txId}</td>
+              <td><strong>${tx.phone || tx.phone_number || 'N/A'}</strong></td>
+              <td>
+                <div style="background:#030712; padding:6px; border-radius:4px; font-size:0.75rem; border:1px solid #1f2937;">
+                  <div><strong>Channel:</strong> <span style="color:#38bdf8">${channel}</span></div>
+                  ${name ? `<div><strong>Name:</strong> ${name}</div>` : ''}
+                  ${acc ? `<div><strong>Acc:</strong> <span class="copy-pill" onclick="copyText('${acc}')">${acc} 📋</span></div>` : ''}
+                </div>
+              </td>
+              <td style="color:#22c55e; font-weight:bold;">${net.toFixed(2)} GHS<br><small style="color:#9ca3af; font-size:0.65rem;">Gross: ${gross.toFixed(2)}</small></td>
+              <td><span class="badge ${badge}">${status.toUpperCase()}</span></td>
+              <td>
+                ${status === 'pending' ? `
+                  <button class="action-btn btn-success" onclick="procWithdrawal(${txId}, 'approve')">Approve</button>
+                  <button class="action-btn btn-danger" onclick="procWithdrawal(${txId}, 'reject')">Reject</button>
+                ` : '<span style="color:#6b7280; font-size:0.75rem;">Processed</span>'}
+              </td>
+            </tr>
+          `;
+        }).join('');
+        document.getElementById('statPendingWithdrawals').innerText = pending;
+      } catch (e) {
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #ef4444;">Failed to load withdrawals.</td></tr>`;
+      }
+    }
+
+    async function procWithdrawal(id, action) {
+      if (!confirm(`Are you sure you want to ${action} withdrawal #${id}?`)) return;
+      try {
+        const res = await apiRequest('/api/admin/withdrawals/action', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ transactionId: id, action })
+        });
+        const data = await res.json();
+        showToast(data.message || 'Success');
+        initDashboardData();
+      } catch (e) { alert('Error processing withdrawal.'); }
+    }
+
+    async function loadUsers() {
+      try {
+        const res = await apiRequest('/api/admin/users');
+        const data = await res.json();
+        globalUsersList = data.users || data.data || [];
+        filterUsersTable();
+      } catch (e) {
+        document.getElementById('usersTableBody').innerHTML = `<tr><td colspan="7" style="text-align: center; color: #ef4444;">Failed to load users directory.</td></tr>`;
+        document.getElementById('referralsTableBody').innerHTML = `<tr><td colspan="7" style="text-align: center; color: #ef4444;">Failed to load referral stats.</td></tr>`;
+      }
+    }
+
+    function filterUsersTable() {
+      const q = document.getElementById('userSearchBox').value.trim().toLowerCase();
+      const filtered = globalUsersList.filter(u => {
+        const phone = String(u.phone || u.phone_number || '').toLowerCase();
+        const id = String(u.id || u.user_id || '');
+        const name = String(u.official_name || u.account_name || '').toLowerCase();
+        const acc = String(u.channel_number || u.account_number || '').toLowerCase();
+        return phone.includes(q) || id.includes(q) || name.includes(q) || acc.includes(q);
+      });
+      renderUsers(filtered);
+      renderReferrals(filtered);
+    }
+
+    function renderUsers(users) {
+      const tbody = document.getElementById('usersTableBody');
       if (!users.length) {
-        tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: #94a3b8;">No matching users found.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: #9ca3af;">No matching users found.</td></tr>`;
         return;
       }
 
-      tbody.innerHTML = users.map(user => {
-        const userId = user.id || user.user_id;
-        const isDeleted = user.status === 'deleted' || user.is_deleted == 1;
-
+      tbody.innerHTML = users.map(u => {
+        const id = u.id || u.user_id;
+        const isDel = u.status === 'deleted' || u.is_deleted == 1;
         return `
           <tr>
-            <td>#${userId}</td>
-            <td><strong>${user.phone || user.phone_number || 'N/A'}</strong></td>
-            <td>${parseFloat(user.balance || 0).toFixed(2)} GHS</td>
-            <td><strong>VIP ${user.vip_level || user.vipLevel || 0}</strong></td>
-            <td><span class="${isDeleted ? 'badge-deleted' : 'badge-approved'}">${isDeleted ? 'DELETED' : 'ACTIVE'}</span></td>
+            <td>#${id}</td>
+            <td><strong>${u.phone || u.phone_number || 'N/A'}</strong></td>
+            <td>${parseFloat(u.balance || 0).toFixed(2)} GHS</td>
+            <td>VIP ${u.vip_level || 0}</td>
+            <td><span class="badge ${isDel ? 'badge-deleted' : 'badge-approved'}">${isDel ? 'DELETED' : 'ACTIVE'}</span></td>
             <td>
-              <button class="btn-action btn-approve" onclick="toggleUserWithdrawal(${userId}, 1)">Enable W/D</button>
-              <button class="btn-action btn-reject" onclick="toggleUserWithdrawal(${userId}, 0)">Disable W/D</button>
+              <button class="action-btn btn-success" onclick="toggleWd(${id}, 1)">Enable</button>
+              <button class="action-btn btn-danger" onclick="toggleWd(${id}, 0)">Disable</button>
             </td>
             <td>
-              ${isDeleted ? 
-                `<button class="btn-action btn-restore" onclick="toggleUserStatus(${userId}, 'restore')">Restore</button>` : 
-                `<button class="btn-action btn-reject" onclick="toggleUserStatus(${userId}, 'delete')">Delete</button>`
+              ${isDel ? 
+                `<button class="action-btn btn" onclick="userAction(${id}, 'restore')">Restore</button>` : 
+                `<button class="action-btn btn-danger" onclick="userAction(${id}, 'delete')">Delete</button>`
               }
             </td>
           </tr>
@@ -631,427 +666,162 @@
       }).join('');
     }
 
-    async function toggleUserWithdrawal(userId, enabledState) {
-      const actionText = enabledState === 1 ? "enable" : "disable";
-      if (!confirm(`Are you sure you want to ${actionText} withdrawals for user #${userId}?`)) return;
-
+    async function toggleWd(userId, state) {
       try {
-        const res = await adminFetch(`${API_BASE_URL}/api/admin/users/toggle-withdrawal`, {
+        const res = await apiRequest('/api/admin/users/toggle-withdrawal', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ userId, enabled: enabledState })
+          body: JSON.stringify({ userId, enabled: state })
         });
         const data = await res.json();
-        alert(data.message || `Withdrawals updated successfully.`);
-        refreshDashboard();
-      } catch (err) {
-        console.error('Withdrawal toggle error:', err);
-        alert("Server error updating user withdrawal status.");
-      }
+        showToast(data.message || 'Updated withdrawal status');
+      } catch (e) { alert('Error updating withdrawal permission.'); }
     }
 
-    function renderReferralStatsTable(users) {
-      const tbody = document.getElementById('referralStatsTable');
-      if (!users.length) {
-        tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: #94a3b8;">No referral records found.</td></tr>`;
-        return;
-      }
-
-      tbody.innerHTML = users.map(user => {
-        const userId = user.id || user.user_id;
-        const phone = user.phone || user.phone_number || 'N/A';
-        return `
-          <tr>
-            <td>#${userId}</td>
-            <td><strong>${phone}</strong></td>
-            <td>${parseFloat(user.balance || 0).toFixed(2)} GHS</td>
-            <td><span style="color: #38bdf8; font-weight: bold;">${user.total_referrals || user.totalReferrals || 0}</span></td>
-            <td><span class="badge-approved">${user.deposited_referrals || user.depositedReferrals || 0} Active</span></td>
-            <td><span class="badge-rejected">${user.non_deposited_referrals || user.nonDepositedReferrals || 0} Unfunded</span></td>
-            <td>
-              <button class="btn-action btn-view" onclick="viewReferralTree(${userId}, '${phone}')">Tree View</button>
-            </td>
-          </tr>
-        `;
-      }).join('');
-    }
-
-    async function viewReferralTree(userId, phone) {
-      const modal = document.getElementById('referralTreeModal');
-      const container = document.getElementById('referralTreeBody');
-
-      document.getElementById('treeModalTitle').innerText = `Referral Tree for User ${phone} (#${userId})`;
-      container.innerHTML = `<p style="color: #94a3b8; text-align: center; padding: 20px;">Fetching downline network data...</p>`;
-      modal.style.display = 'flex';
-
-      try {
-        const res = await adminFetch(`${API_BASE_URL}/api/admin/users/${userId}/referrals`);
-        const data = await res.json();
-
-        const treeList = data.tree || data.referrals || [];
-        if (data.success && Array.isArray(treeList) && treeList.length > 0) {
-          container.innerHTML = `
-            <div class="table-responsive">
-              <table>
-                <thead>
-                  <tr>
-                    <th>User ID</th>
-                    <th>Phone Number</th>
-                    <th>Level</th>
-                    <th>Balance</th>
-                    <th>Total Deposited</th>
-                    <th>Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  ${treeList.map(ref => `
-                    <tr>
-                      <td>#${ref.id || ref.user_id}</td>
-                      <td><strong>${ref.phone || ref.phone_number || 'N/A'}</strong></td>
-                      <td><span style="color: #38bdf8; font-weight: 600;">Level ${ref.level || 1}</span></td>
-                      <td>${parseFloat(ref.balance || 0).toFixed(2)} GHS</td>
-                      <td style="color: #22c55e; font-weight: bold;">${parseFloat(ref.total_deposited || ref.totalDeposited || 0).toFixed(2)} GHS</td>
-                      <td>
-                        <span class="${parseFloat(ref.total_deposited || ref.totalDeposited || 0) > 0 ? 'badge-approved' : 'badge-rejected'}">
-                          ${parseFloat(ref.total_deposited || ref.totalDeposited || 0) > 0 ? 'FUNDED' : 'UNFUNDED'}
-                        </span>
-                      </td>
-                    </tr>
-                  `).join('')}
-                </tbody>
-              </table>
-            </div>
-          `;
-        } else {
-          container.innerHTML = `<p style="color: #94a3b8; text-align: center; padding: 20px;">No downline referral records available.</p>`;
-        }
-      } catch (err) {
-        container.innerHTML = `<p style="color: #ef4444; text-align: center; padding: 20px;">Failed to reach backend server for tree data.</p>`;
-      }
-    }
-
-    function closeReferralModal() {
-      document.getElementById('referralTreeModal').style.display = 'none';
-    }
-
-    window.onclick = function(event) {
-      const modal = document.getElementById('referralTreeModal');
-      const imgModal = document.getElementById('imageModal');
-      if (event.target === modal) closeReferralModal();
-      if (event.target === imgModal) closeImageModal();
-    };
-
-    async function toggleUserStatus(userId, action) {
+    async function userAction(userId, action) {
       if (!confirm(`Are you sure you want to ${action} user #${userId}?`)) return;
-
       try {
-        const res = await adminFetch(`${API_BASE_URL}/api/admin/users/action`, {
+        const res = await apiRequest('/api/admin/users/action', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ userId, action })
         });
         const data = await res.json();
-        alert(data.message || `User ${action}d successfully.`);
-        refreshDashboard();
-      } catch (err) {
-        alert("Server error modifying user account.");
-      }
+        showToast(data.message || 'Success');
+        initDashboardData();
+      } catch (e) { alert('Error modifying user account.'); }
     }
 
-    async function loadRechargesData() {
-      const tbody = document.getElementById('rechargeTableBody');
-
-      try {
-        const res = await adminFetch(`${API_BASE_URL}/api/admin/recharges`);
-        const data = await res.json();
-
-        const rechargesList = data.recharges || data.data || [];
-        if (data.success && Array.isArray(rechargesList)) {
-          renderRecharges(rechargesList);
-        } else {
-          tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #ef4444;">${data.message || 'Error fetching recharges'}</td></tr>`;
-        }
-      } catch (err) {
-        tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #ef4444;">Failed to connect to backend server.</td></tr>`;
-      }
-    }
-
-    function renderRecharges(items) {
-      const tbody = document.getElementById('rechargeTableBody');
-      let pendingCount = 0;
-
-      if (!items || items.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #94a3b8;">No recharge records found.</td></tr>`;
-        document.getElementById('statPendingRechargeCount').innerText = '0';
+    function renderReferrals(users) {
+      const tbody = document.getElementById('referralsTableBody');
+      if (!users.length) {
+        tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: #9ca3af;">No referral records found.</td></tr>`;
         return;
       }
 
-      tbody.innerHTML = items.map(tx => {
-        const status = (tx.status || 'pending').toLowerCase();
-        if (status === 'pending') pendingCount++;
-        const badgeClass = status === 'approved' ? 'badge-approved' : (status === 'rejected' ? 'badge-rejected' : 'badge-pending');
-        const displayChannel = tx.channel || tx.payment_channel || tx.channel_type || 'MoMo';
-        const displayTxId = tx.transaction_id || tx.reference_code || tx.reference || tx.id || 'N/A';
-
-        let proofHtml = '';
-        const proofImgPath = tx.proof_image || tx.proofImage;
-        if (proofImgPath) {
-          const fullImgUrl = proofImgPath.startsWith('http') ? proofImgPath : `${API_BASE_URL}${proofImgPath}`;
-          proofHtml = `
-            <div style="margin-top: 4px;">
-              <a href="javascript:void(0)" onclick="openImageModal('${proofImgPath}')" class="proof-preview-link">
-                <img src="${fullImgUrl}" alt="Proof" class="proof-thumb" />
-                <span>View Receipt</span>
-              </a>
-            </div>
-          `;
-        }
-
-        const txId = tx.id || tx.transaction_id;
+      tbody.innerHTML = users.map(u => {
+        const id = u.id || u.user_id;
+        const phone = u.phone || u.phone_number || 'N/A';
         return `
           <tr>
-            <td>#${txId}</td>
-            <td><strong>${tx.phone || tx.phone_number || 'N/A'}</strong></td>
+            <td>#${id}</td>
+            <td><strong>${phone}</strong></td>
+            <td>${parseFloat(u.balance || 0).toFixed(2)} GHS</td>
+            <td><span style="color:#38bdf8; font-weight:bold;">${u.total_referrals || u.totalReferrals || 0}</span></td>
+            <td><span class="badge badge-approved">${u.deposited_referrals || u.depositedReferrals || 0} Active</span></td>
+            <td><span class="badge badge-rejected">${u.non_deposited_referrals || u.nonDepositedReferrals || 0} Unfunded</span></td>
             <td>
-              ${displayChannel} <br><small style="color:#94a3b8">${displayTxId}</small>
-              ${proofHtml}
-            </td>
-            <td style="color: #22c55e; font-weight: 600;">+${parseFloat(tx.amount || 0).toFixed(2)} GHS</td>
-            <td><span class="${badgeClass}">${status.toUpperCase()}</span></td>
-            <td>
-              ${status === 'pending' ? `
-                <button class="btn-action btn-approve" onclick="processRechargeAction(${txId}, 'approve')">Approve</button>
-                <button class="btn-action btn-reject" onclick="processRechargeAction(${txId}, 'reject')">Reject</button>
-              ` : '<span style="color: #64748b;">Processed</span>'}
+              <button class="action-btn btn" style="background:#7c3aed;" onclick="viewTree(${id}, '${phone}')">Tree View</button>
             </td>
           </tr>
         `;
       }).join('');
-
-      document.getElementById('statPendingRechargeCount').innerText = pendingCount;
     }
 
-    async function processRechargeAction(transactionId, action) {
-      if (!confirm(`Are you sure you want to ${action} recharge #${transactionId}?`)) return;
+    async function viewTree(userId, phone) {
+      document.getElementById('treeModalTitle').innerText = `Referral Downline Tree for ${phone} (#${userId})`;
+      document.getElementById('treeModalContent').innerHTML = `<p style="color:#9ca3af; text-align:center; padding:20px;">Fetching network...</p>`;
+      openModal('treeModal');
 
       try {
-        const res = await adminFetch(`${API_BASE_URL}/api/admin/recharges/action`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ transactionId, action })
-        });
+        const res = await apiRequest(`/api/admin/users/${userId}/referrals`);
         const data = await res.json();
-        alert(data.message || 'Action executed successfully.');
-        refreshDashboard();
-      } catch (err) {
-        alert("Server error processing recharge action.");
-      }
-    }
+        const tree = data.tree || data.referrals || [];
 
-    async function loadDashboardData() {
-      const tbody = document.getElementById('withdrawalTableBody');
-
-      try {
-        const res = await adminFetch(`${API_BASE_URL}/api/admin/withdrawals`, {
-          method: 'GET',
-          headers: { 'Content-Type': 'application/json' }
-        });
-        const data = await res.json();
-
-        const withdrawalsList = data.withdrawals || data.data || [];
-        if (data.success && Array.isArray(withdrawalsList)) {
-          renderWithdrawals(withdrawalsList);
-        } else {
-          tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #ef4444;">${data.message || 'Error fetching withdrawals'}</td></tr>`;
+        if (!tree.length) {
+          document.getElementById('treeModalContent').innerHTML = `<p style="color:#9ca3af; text-align:center; padding:20px;">No downline referrals found for this user.</p>`;
+          return;
         }
-      } catch (err) {
-        tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #ef4444;">Failed to connect to backend server.</td></tr>`;
-      }
-    }
 
-    function renderWithdrawals(items) {
-      const tbody = document.getElementById('withdrawalTableBody');
-      let pendingCount = 0;
-
-      if (!items || items.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #94a3b8;">No withdrawal records found.</td></tr>`;
-        document.getElementById('statPendingCount').innerText = '0';
-        return;
-      }
-
-      tbody.innerHTML = items.map(tx => {
-        const status = (tx.status || 'pending').toLowerCase();
-        if (status === 'pending') pendingCount++;
-        const badgeClass = status === 'approved' ? 'badge-approved' : (status === 'rejected' ? 'badge-rejected' : 'badge-pending');
-        
-        const channel = tx.bound_details?.channel || tx.channel || tx.channel_type || tx.payment_channel || tx.bank_name || 'Other';
-        const officialName = tx.bound_details?.official_name || tx.official_name || tx.account_name || tx.card_name || '';
-        const accNum = tx.bound_details?.account_number || tx.channel_number || tx.account_number || tx.bank_account_number || tx.card_number || '';
-
-        const grossAmount = parseFloat(tx.gross_amount || tx.amount || tx.grossAmount || 0);
-        const handlingFee = parseFloat(tx.fee_amount || tx.fee || tx.handling_fee || tx.feeAmount || 0);
-        const netAmount = parseFloat(tx.net_amount || tx.netAmount || (grossAmount - handlingFee));
-
-        let accountDisplay = `<div class="card-info">`;
-        accountDisplay += `<div><strong>Channel:</strong> <span style="color:#38bdf8; font-weight:600;">${channel}</span></div>`;
-        if (officialName) accountDisplay += `<div><strong>Official Name:</strong> ${officialName}</div>`;
-        if (accNum) accountDisplay += `<div><strong>Account No:</strong> <span class="copyable-acc" onclick="copyToClipboard('${accNum}')">${accNum} <span class="copy-icon">📋</span></span></div>`;
-        if (!officialName && !accNum) accountDisplay += `<div>N/A</div>`;
-        accountDisplay += `</div>`;
-
-        const txId = tx.id || tx.transaction_id;
-        return `
-          <tr>
-            <td>#${txId}</td>
-            <td><strong>${tx.phone || tx.phone_number || 'N/A'}</strong></td>
-            <td>${accountDisplay}</td>
-            <td>
-              <div style="color: #22c55e; font-size: 1.05rem; font-weight: 700;">
-                ${netAmount.toFixed(2)} GHS
-              </div>
-              <div style="font-size: 0.75rem; color: #94a3b8;">
-                Gross: ${grossAmount.toFixed(2)} | Fee: -${handlingFee.toFixed(2)}
-              </div>
-            </td>
-            <td><span class="${badgeClass}">${status.toUpperCase()}</span></td>
-            <td>
-              ${status === 'pending' ? `
-                <button class="btn-action btn-approve" onclick="processAction(${txId}, 'approve')">Approve</button>
-                <button class="btn-action btn-reject" onclick="processAction(${txId}, 'reject')">Reject</button>
-              ` : '<span style="color: #64748b;">Processed</span>'}
-            </td>
-          </tr>
+        document.getElementById('treeModalContent').innerHTML = `
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr><th>ID</th><th>Phone</th><th>Level</th><th>Balance</th><th>Total Deposited</th><th>Status</th></tr>
+              </thead>
+              <tbody>
+                ${tree.map(r => `
+                  <tr>
+                    <td>#${r.id || r.user_id}</td>
+                    <td><strong>${r.phone || r.phone_number || 'N/A'}</strong></td>
+                    <td><span style="color:#38bdf8">Level ${r.level || 1}</span></td>
+                    <td>${parseFloat(r.balance || 0).toFixed(2)} GHS</td>
+                    <td style="color:#22c55e; font-weight:bold;">${parseFloat(r.total_deposited || r.totalDeposited || 0).toFixed(2)} GHS</td>
+                    <td><span class="badge ${parseFloat(r.total_deposited || r.totalDeposited || 0) > 0 ? 'badge-approved' : 'badge-rejected'}">${parseFloat(r.total_deposited || r.totalDeposited || 0) > 0 ? 'FUNDED' : 'UNFUNDED'}</span></td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
         `;
-      }).join('');
-
-      document.getElementById('statPendingCount').innerText = pendingCount;
-    }
-
-    async function processAction(transactionId, action) {
-      if (!confirm(`Are you sure you want to ${action} transaction #${transactionId}?`)) return;
-
-      try {
-        const res = await adminFetch(`${API_BASE_URL}/api/admin/withdrawals/action`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ transactionId, action })
-        });
-        const data = await res.json();
-        alert(data.message || 'Action executed successfully.');
-        refreshDashboard();
-      } catch (err) {
-        alert("Server error processing action.");
+      } catch (e) {
+        document.getElementById('treeModalContent').innerHTML = `<p style="color:#ef4444; text-align:center; padding:20px;">Failed to fetch referral tree.</p>`;
       }
     }
 
-    async function handleManualCredit(event) {
-      event.preventDefault();
-      const phone = document.getElementById('targetPhone').value.trim();
-      const type = document.getElementById('adjustType').value;
-      const amount = parseFloat(document.getElementById('adjustAmount').value);
-
-      if (!phone || isNaN(amount) || amount <= 0) {
-        return alert('Please provide a valid phone number and positive amount.');
-      }
+    async function adjustUserBalance(e) {
+      e.preventDefault();
+      const phone = document.getElementById('adjPhone').value.trim();
+      const type = document.getElementById('adjType').value;
+      const amount = parseFloat(document.getElementById('adjAmount').value);
 
       try {
-        const res = await adminFetch(`${API_BASE_URL}/api/admin/users/balance`, {
+        const res = await apiRequest('/api/admin/users/balance', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ phone, type, amount })
         });
-
         const data = await res.json();
-        alert(data.message || 'Balance updated.');
+        showToast(data.message || 'Balance adjusted');
         if (data.success) {
-          document.getElementById('balanceAdjustmentForm').reset();
-          refreshDashboard();
+          document.getElementById('adjPhone').value = '';
+          document.getElementById('adjAmount').value = '';
+          initDashboardData();
         }
-      } catch (err) {
-        alert("Server error executing manual balance adjustment.");
-      }
+      } catch (e) { alert('Error adjusting balance.'); }
     }
 
-    async function handleBankCardReset(event) {
-      event.preventDefault();
-      const inputVal = document.getElementById('resetTargetPhone').value.trim();
+    async function resetUserBank(e) {
+      e.preventDefault();
+      const target = document.getElementById('resetBankTarget').value.trim();
+      if (!confirm(`Reset bound payment details for "${target}"?`)) return;
 
-      if (!inputVal) {
-        return alert('Please enter a phone number or User ID.');
-      }
-
-      if (!confirm(`Are you sure you want to reset payment details for "${inputVal}"?`)) {
-        return;
-      }
-
-      const isNumericId = !isNaN(inputVal) && inputVal.length < 8;
-      const payload = isNumericId ? { userId: inputVal } : { phone: inputVal };
-
+      const payload = !isNaN(target) && target.length < 8 ? { userId: target } : { phone: target };
       try {
-        const res = await adminFetch(`${API_BASE_URL}/api/admin/bankcard/reset`, {
+        const res = await apiRequest('/api/admin/bankcard/reset', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)
         });
-
         const data = await res.json();
-        alert(data.message || 'Payment account reset executed.');
-
-        if (data.success) {
-          document.getElementById('resetBankForm').reset();
-          refreshDashboard();
-        }
-      } catch (err) {
-        alert("Server error executing bank account reset.");
-      }
+        showToast(data.message || 'Payment account reset');
+        if (data.success) document.getElementById('resetBankTarget').value = '';
+      } catch (e) { alert('Error resetting payment account.'); }
     }
 
-    async function handlePasswordReset(event) {
-      event.preventDefault();
-      const inputVal = document.getElementById('resetPassPhone').value.trim();
-      const newPassword = document.getElementById('newPassword').value.trim();
+    async function resetUserPassword(e) {
+      e.preventDefault();
+      const target = document.getElementById('resetPassTarget').value.trim();
+      const newPassword = document.getElementById('resetPassNew').value.trim();
 
-      if (!inputVal || !newPassword) {
-        return alert('Please enter both the user identifier and the new password.');
-      }
+      if (!confirm(`Update password for "${target}"?`)) return;
 
-      if (newPassword.length < 6) {
-        return alert('New password must be at least 6 characters long.');
-      }
-
-      if (!confirm(`Are you sure you want to change the password for "${inputVal}"?`)) {
-        return;
-      }
-
-      const matchedUser = allUsers.find(u => 
-        String(u.id || u.user_id) === inputVal || String(u.phone || u.phone_number).trim() === inputVal
-      );
-
-      let payload = {};
-      if (matchedUser) {
-        payload = { userId: matchedUser.id || matchedUser.user_id, phone: matchedUser.phone || matchedUser.phone_number, newPassword };
-      } else {
-        const isNumeric = !isNaN(inputVal);
-        payload = isNumeric ? { userId: inputVal, newPassword } : { phone: inputVal, newPassword };
-      }
+      const match = globalUsersList.find(u => String(u.id || u.user_id) === target || String(u.phone || '').trim() === target);
+      let payload = match ? { userId: match.id || match.user_id, newPassword } : (!isNaN(target) ? { userId: target, newPassword } : { phone: target, newPassword });
 
       try {
-        const res = await adminFetch(`${API_BASE_URL}/api/admin/users/reset-password`, {
+        const res = await apiRequest('/api/admin/users/reset-password', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)
         });
-
         const data = await res.json();
-        alert(data.message || 'Password reset successfully.');
-
+        showToast(data.message || 'Password updated successfully');
         if (data.success) {
-          document.getElementById('resetPasswordForm').reset();
+          document.getElementById('resetPassTarget').value = '';
+          document.getElementById('resetPassNew').value = '';
         }
-      } catch (err) {
-        console.error('Password reset error:', err);
-        alert("Server error executing password reset.");
-      }
+      } catch (e) { alert('Error resetting password.'); }
     }
   </script>
 </body>
