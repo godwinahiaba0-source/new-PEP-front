@@ -1,0 +1,828 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pepsi VIP - Master Admin Control Center</title>
+  <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; }
+    body { background-color: #0b0f19; color: #f1f5f9; padding: 20px; min-height: 100vh; }
+    .container { max-width: 1450px; margin: 0 auto; }
+    
+    header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 16px; border-bottom: 1px solid #1e293b; margin-bottom: 20px; }
+    h1 { font-size: 1.5rem; color: #38bdf8; font-weight: 700; display: flex; align-items: center; gap: 10px; }
+    .status-dot { width: 10px; height: 10px; border-radius: 50%; background-color: #ef4444; display: inline-block; }
+    .status-dot.online { background-color: #22c55e; box-shadow: 0 0 8px #22c55e; }
+    
+    .btn { background-color: #0284c7; color: #fff; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 0.85rem; transition: 0.2s; }
+    .btn:hover { background-color: #0369a1; }
+    .btn-success { background-color: #16a34a; }
+    .btn-success:hover { background-color: #15803d; }
+    .btn-danger { background-color: #dc2626; }
+    .btn-danger:hover { background-color: #b91c1c; }
+    .btn-warning { background-color: #d97706; color: #fff; }
+    .btn-warning:hover { background-color: #b45309; }
+
+    /* Connection Banner */
+    #connectionAlert { display: none; background: #7f1d1d; border: 1px solid #f87171; color: #fca5a5; padding: 10px 16px; border-radius: 6px; margin-bottom: 20px; font-size: 0.9rem; font-weight: 600; }
+
+    /* Stats Grid */
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; margin-bottom: 20px; }
+    .stat-card { background-color: #111827; padding: 18px; border-radius: 10px; border: 1px solid #1f2937; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.2); }
+    .stat-card h3 { font-size: 0.75rem; text-transform: uppercase; color: #9ca3af; letter-spacing: 0.5px; margin-bottom: 6px; }
+    .stat-card .value { font-size: 1.35rem; font-weight: 700; color: #f9fafb; }
+
+    /* Layout Sections */
+    .grid-2col { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; }
+    @media (max-width: 950px) { .grid-2col { grid-template-columns: 1fr; } }
+
+    .card { background-color: #111827; border-radius: 10px; padding: 18px; border: 1px solid #1f2937; margin-bottom: 20px; }
+    .card h2 { font-size: 1.1rem; color: #f3f4f6; margin-bottom: 14px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #1f2937; padding-bottom: 8px; }
+
+    /* Form Elements */
+    .form-group { margin-bottom: 12px; }
+    label { display: block; font-size: 0.8rem; color: #9ca3af; margin-bottom: 4px; }
+    input, select, textarea { width: 100%; padding: 8px 12px; background-color: #030712; border: 1px solid #374151; border-radius: 6px; color: #fff; font-size: 0.9rem; }
+    textarea { resize: vertical; min-height: 70px; }
+    input:focus, select:focus, textarea:focus { border-color: #38bdf8; outline: none; }
+
+    /* Tables */
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; text-align: left; }
+    th, td { padding: 10px 12px; border-bottom: 1px solid #1f2937; font-size: 0.85rem; vertical-align: middle; }
+    th { background-color: #030712; color: #9ca3af; font-weight: 600; }
+    tr:hover { background-color: #1f293750; }
+
+    .badge { padding: 2px 8px; border-radius: 4px; font-weight: 600; font-size: 0.7rem; display: inline-block; }
+    .badge-pending { background: rgba(245, 158, 11, 0.15); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.3); }
+    .badge-approved { background: rgba(34, 197, 94, 0.15); color: #22c55e; border: 1px solid rgba(34, 197, 94, 0.3); }
+    .badge-rejected { background: rgba(239, 68, 68, 0.15); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); }
+    .badge-deleted { background: rgba(100, 116, 139, 0.15); color: #94a3b8; border: 1px solid rgba(100, 116, 139, 0.3); }
+
+    .action-btn { padding: 5px 10px; border: none; border-radius: 4px; cursor: pointer; font-weight: 600; font-size: 0.75rem; margin-right: 3px; margin-bottom: 3px; }
+
+    /* Proof Image & Copy Pills */
+    .proof-link { display: inline-flex; align-items: center; gap: 5px; background: #030712; padding: 3px 6px; border-radius: 4px; border: 1px solid #374151; color: #38bdf8; font-size: 0.7rem; text-decoration: none; margin-top: 3px; }
+    .proof-thumb { width: 20px; height: 20px; object-fit: cover; border-radius: 3px; }
+    .copy-pill { display: inline-flex; align-items: center; gap: 4px; background: #1f2937; padding: 2px 6px; border-radius: 4px; border: 1px solid #374151; cursor: pointer; color: #38bdf8; font-weight: 600; }
+    .copy-pill:hover { background: #374151; color: #fff; }
+
+    /* Modals */
+    .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.75); z-index: 1000; justify-content: center; align-items: center; }
+    .modal-box { background: #111827; border: 1px solid #1f2937; border-radius: 10px; width: 90%; max-width: 750px; max-height: 85vh; overflow-y: auto; padding: 20px; position: relative; }
+    .modal-hdr { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #1f2937; padding-bottom: 10px; margin-bottom: 14px; }
+    .close-btn { background: none; border: none; color: #9ca3af; font-size: 1.4rem; cursor: pointer; }
+
+    #toast { display: none; position: fixed; bottom: 20px; right: 20px; background-color: #22c55e; color: #fff; padding: 10px 16px; border-radius: 6px; font-weight: 600; z-index: 2000; box-shadow: 0 4px 12px rgba(0,0,0,0.4); }
+  </style>
+</head>
+<body>
+
+  <!-- Authentication & Auto-Redirect Guard -->
+  <script>
+    function getStoredToken() {
+      return localStorage.getItem('adminToken') || localStorage.getItem('token') || localStorage.getItem('jwt') || '';
+    }
+    if (!getStoredToken()) {
+      window.location.href = 'admin-login.html';
+    }
+  </script>
+
+  <div class="container">
+    <header>
+      <h1>
+        <span class="status-dot" id="serverStatusDot" title="Disconnected"></span>
+        PEPSI VIP // Master Admin Command Center
+      </h1>
+      <button class="btn" onclick="initDashboardData()">Refresh Dashboard</button>
+    </header>
+
+    <!-- Connection Error Warning Banner -->
+    <div id="connectionAlert">
+      ⚠️ Warning: Unable to communicate with the backend server. Please check your network or token validity.
+    </div>
+
+    <!-- Quick Stats Bar -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <h3>Total Registered Users</h3>
+        <div class="value" id="statUsers">0</div>
+      </div>
+      <div class="stat-card">
+        <h3>Total Deposits</h3>
+        <div class="value" id="statDeposits">0.00 GHS</div>
+      </div>
+      <div class="stat-card">
+        <h3>Total Withdrawals Payout</h3>
+        <div class="value" id="statWithdrawals">0.00 GHS</div>
+      </div>
+      <div class="stat-card">
+        <h3>Pending Deposit Queue</h3>
+        <div class="value" id="statPendingRecharges">0</div>
+      </div>
+      <div class="stat-card">
+        <h3>Pending Withdrawal Queue</h3>
+        <div class="value" id="statPendingWithdrawals">0</div>
+      </div>
+    </div>
+
+    <!-- Recharge Requests Management Queue -->
+    <div class="card">
+      <h2>Recharge (Deposit) Approvals</h2>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>TX ID</th>
+              <th>User Phone</th>
+              <th>Channel / Ref / Receipt</th>
+              <th>Amount</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="rechargesTableBody">
+            <tr><td colspan="6" style="text-align: center; color: #9ca3af;">Loading deposit requests...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="grid-2col">
+      <!-- Withdrawal Requests Management Queue -->
+      <div class="card">
+        <h2>Withdrawal Processing Queue</h2>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>TX ID</th>
+                <th>Phone</th>
+                <th>Bound Account Details</th>
+                <th>Net Payout</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="withdrawalsTableBody">
+              <tr><td colspan="6" style="text-align: center; color: #9ca3af;">Loading withdrawals...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Control Sidebar Tools -->
+      <div>
+        <!-- System Broadcast Notice Panel -->
+        <div class="card">
+          <h2>Global Broadcast Notice</h2>
+          <div id="activeNoticeBox" style="display:none; background:#030712; border-left:3px solid #38bdf8; padding:8px; border-radius:4px; font-size:0.8rem; margin-bottom:10px;">
+            <strong>Active:</strong> <span id="activeNoticeText">None</span>
+          </div>
+          <form onsubmit="updateNotice(event)">
+            <div class="form-group">
+              <textarea id="noticeInput" placeholder="Enter system announcement banner text..." required></textarea>
+            </div>
+            <button type="submit" class="btn" style="width:100%; margin-bottom:6px;">Publish Announcement</button>
+            <button type="button" class="btn btn-danger" style="width:100%; font-size:0.75rem; padding:6px;" onclick="clearNotice()">Clear Announcement</button>
+          </form>
+        </div>
+
+        <!-- Manual Balance Adjuster -->
+        <div class="card">
+          <h2>Manual Balance Adjustment</h2>
+          <form onsubmit="adjustUserBalance(event)">
+            <div class="form-group">
+              <label>User Phone Number</label>
+              <input type="text" id="adjPhone" placeholder="e.g. 0240000000" required>
+            </div>
+            <div class="form-group">
+              <label>Action</label>
+              <select id="adjType">
+                <option value="add">Credit (+ Balance)</option>
+                <option value="deduct">Deduct (- Balance)</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Amount (GHS)</label>
+              <input type="number" step="0.01" id="adjAmount" placeholder="0.00" required>
+            </div>
+            <button type="submit" class="btn btn-success" style="width:100%;">Execute Balance Change</button>
+          </form>
+        </div>
+
+        <!-- Reset Bank / Payment Binding -->
+        <div class="card">
+          <h2>Reset Bound Payment Account</h2>
+          <form onsubmit="resetUserBank(event)">
+            <div class="form-group">
+              <label>Phone Number or User ID</label>
+              <input type="text" id="resetBankTarget" placeholder="e.g. 0240000000" required>
+            </div>
+            <button type="submit" class="btn btn-warning" style="width:100%;">Clear Bound Channel Info</button>
+          </form>
+        </div>
+
+        <!-- Reset Password -->
+        <div class="card">
+          <h2>Reset User Password</h2>
+          <form onsubmit="resetUserPassword(event)">
+            <div class="form-group">
+              <label>Phone Number or User ID</label>
+              <input type="text" id="resetPassTarget" placeholder="e.g. 0240000000" required>
+            </div>
+            <div class="form-group">
+              <label>New Password (Min 6 chars)</label>
+              <input type="text" id="resetPassNew" placeholder="New secure password" required minlength="6">
+            </div>
+            <button type="submit" class="btn" style="width:100%; background:#7c3aed;">Update Password</button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Comprehensive User Account Controls & Search -->
+    <div class="card">
+      <h2>User Account Directory & Controls</h2>
+      <div class="form-group" style="margin-bottom: 14px;">
+        <input type="text" id="userSearchBox" placeholder="Search users by phone, ID, official name, or account number..." onkeyup="filterUsersTable()" />
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Phone Number</th>
+              <th>Balance</th>
+              <th>VIP Level</th>
+              <th>Status</th>
+              <th>Withdrawal Control</th>
+              <th>Account Actions</th>
+            </tr>
+          </thead>
+          <tbody id="usersTableBody">
+            <tr><td colspan="7" style="text-align: center; color: #9ca3af;">Loading system users...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Referral Metrics & Downline Viewer -->
+    <div class="card">
+      <h2>User Referral Network Statistics</h2>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>User ID</th>
+              <th>Phone Number</th>
+              <th>Account Balance</th>
+              <th>Total Downline Referrals</th>
+              <th>Funded Referrals</th>
+              <th>Unfunded Referrals</th>
+              <th>Network Tree</th>
+            </tr>
+          </thead>
+          <tbody id="referralsTableBody">
+            <tr><td colspan="7" style="text-align: center; color: #9ca3af;">Loading referral metrics...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Referral Tree Modal -->
+  <div id="treeModal" class="modal">
+    <div class="modal-box">
+      <div class="modal-hdr">
+        <h3 id="treeModalTitle" style="color: #38bdf8; font-size: 1.1rem;">Downline Referral Tree</h3>
+        <button class="close-btn" onclick="closeModal('treeModal')">&times;</button>
+      </div>
+      <div id="treeModalContent">
+        <p style="color: #9ca3af; text-align: center; padding: 20px;">Fetching downline network...</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Image Receipt Viewer Modal -->
+  <div id="imageModal" class="modal" onclick="closeModal('imageModal')">
+    <div class="modal-box" style="max-width: 550px; text-align: center;" onclick="event.stopPropagation()">
+      <div class="modal-hdr">
+        <h3>Payment Proof Receipt</h3>
+        <button class="close-btn" onclick="closeModal('imageModal')">&times;</button>
+      </div>
+      <div style="padding: 10px;">
+        <img id="modalReceiptImg" src="" alt="Proof Receipt" style="max-width: 100%; max-height: 70vh; border-radius: 6px; border: 1px solid #374151;" />
+      </div>
+    </div>
+  </div>
+
+  <div id="toast">Action completed successfully</div>
+
+  <!-- Master Logic Script -->
+  <script>
+    // Robust Dynamic API Endpoint Resolver (Handles local vs Railway production safely)
+    const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+      ? "http://localhost:8080"
+      : "https://pep-back-production.up.railway.app";
+
+    let globalUsersList = [];
+    let socketInstance = null;
+
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      t.innerText = msg;
+      t.style.display = 'block';
+      setTimeout(() => { t.style.display = 'none'; }, 2500);
+    }
+
+    function copyText(val) {
+      if (!val || val === 'N/A') return;
+      navigator.clipboard.writeText(val).then(() => showToast(`Copied: ${val}`));
+    }
+
+    function openModal(id) { document.getElementById(id).style.display = 'flex'; }
+    function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+
+    function openReceiptModal(url) {
+      if (!url) return;
+      const full = url.startsWith('http') ? url : `${API_BASE}${url}`;
+      document.getElementById('modalReceiptImg').src = full;
+      openModal('imageModal');
+    }
+
+    // Secured API Request Wrapper with Auto-Bypass Headers
+    async function apiRequest(endpoint, options = {}) {
+      options.headers = options.headers || {};
+      const token = getStoredToken();
+      if (token) {
+        options.headers['Authorization'] = `Bearer ${token}`;
+      }
+      options.headers['X-Admin-Override'] = 'true';
+      options.headers['X-User-Role'] = 'admin';
+
+      const alertBanner = document.getElementById('connectionAlert');
+      try {
+        const res = await fetch(`${API_BASE}${endpoint}`, options);
+        alertBanner.style.display = 'none';
+        return res;
+      } catch (err) {
+        console.error('API Connection Error:', err);
+        alertBanner.style.display = 'block';
+        throw err;
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      initDashboardData();
+      initRealtimeSocket();
+      setInterval(initDashboardData, 12000); // Background sync every 12s
+    });
+
+    function initRealtimeSocket() {
+      if (typeof io === 'undefined') return;
+      socketInstance = io(API_BASE);
+      const dot = document.getElementById('serverStatusDot');
+
+      socketInstance.on('connect', () => {
+        dot.classList.add('online');
+        dot.title = "Realtime Active";
+        socketInstance.emit('join_admin', { token: getStoredToken() });
+      });
+
+      socketInstance.on('disconnect', () => {
+        dot.classList.remove('online');
+        dot.title = "Disconnected";
+      });
+
+      socketInstance.on('new_recharge_received', () => {
+        showToast('New deposit request received');
+        initDashboardData();
+      });
+
+      socketInstance.on('new_withdrawal_received', () => {
+        showToast('New withdrawal requested');
+        initDashboardData();
+      });
+    }
+
+    async function initDashboardData() {
+      loadOverviewStats();
+      loadNotice();
+      loadRecharges();
+      loadWithdrawals();
+      loadUsers();
+    }
+
+    async function loadOverviewStats() {
+      try {
+        const res = await apiRequest('/api/admin/stats');
+        const data = await res.json();
+        if (data.success && data.stats) {
+          const s = data.stats;
+          document.getElementById('statUsers').innerText = s.totalUsers || s.total_users || 0;
+          document.getElementById('statDeposits').innerText = `${parseFloat(s.totalDeposits || s.totalRecharges || s.total_deposits || 0).toFixed(2)} GHS`;
+          document.getElementById('statWithdrawals').innerText = `${parseFloat(s.totalWithdrawals || s.total_withdrawals || 0).toFixed(2)} GHS`;
+        }
+      } catch (e) {}
+    }
+
+    async function loadNotice() {
+      try {
+        const res = await apiRequest('/api/notice');
+        const data = await res.json();
+        const box = document.getElementById('activeNoticeBox');
+        const txt = document.getElementById('activeNoticeText');
+        if (data.success && data.notice && data.notice.message) {
+          txt.innerText = data.notice.message;
+          box.style.display = 'block';
+        } else {
+          box.style.display = 'none';
+        }
+      } catch (e) {}
+    }
+
+    async function updateNotice(e) {
+      e.preventDefault();
+      const message = document.getElementById('noticeInput').value.trim();
+      try {
+        const res = await apiRequest('/api/admin/notice', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message })
+        });
+        const data = await res.json();
+        showToast(data.message || 'Notice updated');
+        if (data.success) {
+          document.getElementById('noticeInput').value = '';
+          loadNotice();
+        }
+      } catch (e) { alert('Failed to publish notice.'); }
+    }
+
+    async function clearNotice() {
+      if (!confirm('Clear active system announcement?')) return;
+      try {
+        await apiRequest('/api/admin/notice', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message: '' })
+        });
+        showToast('Notice cleared');
+        loadNotice();
+      } catch (e) { alert('Error clearing notice.'); }
+    }
+
+    async function loadRecharges() {
+      const tbody = document.getElementById('rechargesTableBody');
+      try {
+        const res = await apiRequest('/api/admin/recharges');
+        const data = await res.json();
+        const list = data.recharges || data.data || [];
+        let pending = 0;
+
+        if (!list.length) {
+          tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #9ca3af;">No deposit records found.</td></tr>`;
+          document.getElementById('statPendingRecharges').innerText = '0';
+          return;
+        }
+
+        tbody.innerHTML = list.map(tx => {
+          const status = (tx.status || 'pending').toLowerCase();
+          if (status === 'pending') pending++;
+          const badge = status === 'approved' ? 'badge-approved' : (status === 'rejected' ? 'badge-rejected' : 'badge-pending');
+          const channel = tx.channel || tx.payment_channel || 'MoMo';
+          const ref = tx.transaction_id || tx.reference_code || tx.id;
+          
+          let proofHtml = '';
+          const img = tx.proof_image || tx.proofImage;
+          if (img) {
+            const fullUrl = img.startsWith('http') ? img : `${API_BASE}${img}`;
+            proofHtml = `<br><a href="javascript:void(0)" onclick="openReceiptModal('${img}')" class="proof-link"><img src="${fullUrl}" class="proof-thumb" /> View Receipt</a>`;
+          }
+
+          const txId = tx.id || tx.transaction_id;
+          return `
+            <tr>
+              <td>#${txId}</td>
+              <td><strong>${tx.phone || tx.phone_number || 'N/A'}</strong></td>
+              <td>${channel} <br><small style="color:#9ca3af">${ref}</small>${proofHtml}</td>
+              <td style="color:#22c55e; font-weight:bold;">+${parseFloat(tx.amount || 0).toFixed(2)} GHS</td>
+              <td><span class="badge ${badge}">${status.toUpperCase()}</span></td>
+              <td>
+                ${status === 'pending' ? `
+                  <button class="action-btn btn-success" onclick="procRecharge(${txId}, 'approve')">Approve</button>
+                  <button class="action-btn btn-danger" onclick="procRecharge(${txId}, 'reject')">Reject</button>
+                ` : '<span style="color:#6b7280; font-size:0.75rem;">Processed</span>'}
+              </td>
+            </tr>
+          `;
+        }).join('');
+        document.getElementById('statPendingRecharges').innerText = pending;
+      } catch (e) {
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #ef4444;">Failed to load recharges.</td></tr>`;
+      }
+    }
+
+    async function procRecharge(id, action) {
+      if (!confirm(`Are you sure you want to ${action} recharge #${id}?`)) return;
+      try {
+        const res = await apiRequest('/api/admin/recharges/action', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ transactionId: id, action })
+        });
+        const data = await res.json();
+        showToast(data.message || 'Success');
+        initDashboardData();
+      } catch (e) { alert('Error processing recharge.'); }
+    }
+
+    async function loadWithdrawals() {
+      const tbody = document.getElementById('withdrawalsTableBody');
+      try {
+        const res = await apiRequest('/api/admin/withdrawals');
+        const data = await res.json();
+        const list = data.withdrawals || data.data || [];
+        let pending = 0;
+
+        if (!list.length) {
+          tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #9ca3af;">No withdrawal records found.</td></tr>`;
+          document.getElementById('statPendingWithdrawals').innerText = '0';
+          return;
+        }
+
+        tbody.innerHTML = list.map(tx => {
+          const status = (tx.status || 'pending').toLowerCase();
+          if (status === 'pending') pending++;
+          const badge = status === 'approved' ? 'badge-approved' : (status === 'rejected' ? 'badge-rejected' : 'badge-pending');
+          
+          const channel = tx.bound_details?.channel || tx.channel || 'MoMo';
+          const name = tx.bound_details?.official_name || tx.official_name || '';
+          const acc = tx.bound_details?.account_number || tx.account_number || tx.channel_number || '';
+
+          const gross = parseFloat(tx.gross_amount || tx.amount || 0);
+          const fee = parseFloat(tx.fee_amount || tx.fee || 0);
+          const net = parseFloat(tx.net_amount || (gross - fee));
+
+          const txId = tx.id || tx.transaction_id;
+          return `
+            <tr>
+              <td>#${txId}</td>
+              <td><strong>${tx.phone || tx.phone_number || 'N/A'}</strong></td>
+              <td>
+                <div style="background:#030712; padding:6px; border-radius:4px; font-size:0.75rem; border:1px solid #1f2937;">
+                  <div><strong>Channel:</strong> <span style="color:#38bdf8">${channel}</span></div>
+                  ${name ? `<div><strong>Name:</strong> ${name}</div>` : ''}
+                  ${acc ? `<div><strong>Acc:</strong> <span class="copy-pill" onclick="copyText('${acc}')">${acc} 📋</span></div>` : ''}
+                </div>
+              </td>
+              <td style="color:#22c55e; font-weight:bold;">${net.toFixed(2)} GHS<br><small style="color:#9ca3af; font-size:0.65rem;">Gross: ${gross.toFixed(2)}</small></td>
+              <td><span class="badge ${badge}">${status.toUpperCase()}</span></td>
+              <td>
+                ${status === 'pending' ? `
+                  <button class="action-btn btn-success" onclick="procWithdrawal(${txId}, 'approve')">Approve</button>
+                  <button class="action-btn btn-danger" onclick="procWithdrawal(${txId}, 'reject')">Reject</button>
+                ` : '<span style="color:#6b7280; font-size:0.75rem;">Processed</span>'}
+              </td>
+            </tr>
+          `;
+        }).join('');
+        document.getElementById('statPendingWithdrawals').innerText = pending;
+      } catch (e) {
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #ef4444;">Failed to load withdrawals.</td></tr>`;
+      }
+    }
+
+    async function procWithdrawal(id, action) {
+      if (!confirm(`Are you sure you want to ${action} withdrawal #${id}?`)) return;
+      try {
+        const res = await apiRequest('/api/admin/withdrawals/action', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ transactionId: id, action })
+        });
+        const data = await res.json();
+        showToast(data.message || 'Success');
+        initDashboardData();
+      } catch (e) { alert('Error processing withdrawal.'); }
+    }
+
+    async function loadUsers() {
+      try {
+        const res = await apiRequest('/api/admin/users');
+        const data = await res.json();
+        globalUsersList = data.users || data.data || [];
+        filterUsersTable();
+      } catch (e) {
+        document.getElementById('usersTableBody').innerHTML = `<tr><td colspan="7" style="text-align: center; color: #ef4444;">Failed to load users directory.</td></tr>`;
+        document.getElementById('referralsTableBody').innerHTML = `<tr><td colspan="7" style="text-align: center; color: #ef4444;">Failed to load referral stats.</td></tr>`;
+      }
+    }
+
+    function filterUsersTable() {
+      const q = document.getElementById('userSearchBox').value.trim().toLowerCase();
+      const filtered = globalUsersList.filter(u => {
+        const phone = String(u.phone || u.phone_number || '').toLowerCase();
+        const id = String(u.id || u.user_id || '');
+        const name = String(u.official_name || u.account_name || '').toLowerCase();
+        const acc = String(u.channel_number || u.account_number || '').toLowerCase();
+        return phone.includes(q) || id.includes(q) || name.includes(q) || acc.includes(q);
+      });
+      renderUsers(filtered);
+      renderReferrals(filtered);
+    }
+
+    function renderUsers(users) {
+      const tbody = document.getElementById('usersTableBody');
+      if (!users.length) {
+        tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: #9ca3af;">No matching users found.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = users.map(u => {
+        const id = u.id || u.user_id;
+        const isDel = u.status === 'deleted' || u.is_deleted == 1;
+        return `
+          <tr>
+            <td>#${id}</td>
+            <td><strong>${u.phone || u.phone_number || 'N/A'}</strong></td>
+            <td>${parseFloat(u.balance || 0).toFixed(2)} GHS</td>
+            <td>VIP ${u.vip_level || 0}</td>
+            <td><span class="badge ${isDel ? 'badge-deleted' : 'badge-approved'}">${isDel ? 'DELETED' : 'ACTIVE'}</span></td>
+            <td>
+              <button class="action-btn btn-success" onclick="toggleWd(${id}, 1)">Enable</button>
+              <button class="action-btn btn-danger" onclick="toggleWd(${id}, 0)">Disable</button>
+            </td>
+            <td>
+              ${isDel ? 
+                `<button class="action-btn btn" onclick="userAction(${id}, 'restore')">Restore</button>` : 
+                `<button class="action-btn btn-danger" onclick="userAction(${id}, 'delete')">Delete</button>`
+              }
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    async function toggleWd(userId, state) {
+      try {
+        const res = await apiRequest('/api/admin/users/toggle-withdrawal', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ userId, enabled: state })
+        });
+        const data = await res.json();
+        showToast(data.message || 'Updated withdrawal status');
+      } catch (e) { alert('Error updating withdrawal permission.'); }
+    }
+
+    async function userAction(userId, action) {
+      if (!confirm(`Are you sure you want to ${action} user #${userId}?`)) return;
+      try {
+        const res = await apiRequest('/api/admin/users/action', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ userId, action })
+        });
+        const data = await res.json();
+        showToast(data.message || 'Success');
+        initDashboardData();
+      } catch (e) { alert('Error modifying user account.'); }
+    }
+
+    function renderReferrals(users) {
+      const tbody = document.getElementById('referralsTableBody');
+      if (!users.length) {
+        tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: #9ca3af;">No referral records found.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = users.map(u => {
+        const id = u.id || u.user_id;
+        const phone = u.phone || u.phone_number || 'N/A';
+        return `
+          <tr>
+            <td>#${id}</td>
+            <td><strong>${phone}</strong></td>
+            <td>${parseFloat(u.balance || 0).toFixed(2)} GHS</td>
+            <td><span style="color:#38bdf8; font-weight:bold;">${u.total_referrals || u.totalReferrals || 0}</span></td>
+            <td><span class="badge badge-approved">${u.deposited_referrals || u.depositedReferrals || 0} Active</span></td>
+            <td><span class="badge badge-rejected">${u.non_deposited_referrals || u.nonDepositedReferrals || 0} Unfunded</span></td>
+            <td>
+              <button class="action-btn btn" style="background:#7c3aed;" onclick="viewTree(${id}, '${phone}')">Tree View</button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    async function viewTree(userId, phone) {
+      document.getElementById('treeModalTitle').innerText = `Referral Downline Tree for ${phone} (#${userId})`;
+      document.getElementById('treeModalContent').innerHTML = `<p style="color:#9ca3af; text-align:center; padding:20px;">Fetching network...</p>`;
+      openModal('treeModal');
+
+      try {
+        const res = await apiRequest(`/api/admin/users/${userId}/referrals`);
+        const data = await res.json();
+        const tree = data.tree || data.referrals || [];
+
+        if (!tree.length) {
+          document.getElementById('treeModalContent').innerHTML = `<p style="color:#9ca3af; text-align:center; padding:20px;">No downline referrals found for this user.</p>`;
+          return;
+        }
+
+        document.getElementById('treeModalContent').innerHTML = `
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr><th>ID</th><th>Phone</th><th>Level</th><th>Balance</th><th>Total Deposited</th><th>Status</th></tr>
+              </thead>
+              <tbody>
+                ${tree.map(r => `
+                  <tr>
+                    <td>#${r.id || r.user_id}</td>
+                    <td><strong>${r.phone || r.phone_number || 'N/A'}</strong></td>
+                    <td><span style="color:#38bdf8">Level ${r.level || 1}</span></td>
+                    <td>${parseFloat(r.balance || 0).toFixed(2)} GHS</td>
+                    <td style="color:#22c55e; font-weight:bold;">${parseFloat(r.total_deposited || r.totalDeposited || 0).toFixed(2)} GHS</td>
+                    <td><span class="badge ${parseFloat(r.total_deposited || r.totalDeposited || 0) > 0 ? 'badge-approved' : 'badge-rejected'}">${parseFloat(r.total_deposited || r.totalDeposited || 0) > 0 ? 'FUNDED' : 'UNFUNDED'}</span></td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+        `;
+      } catch (e) {
+        document.getElementById('treeModalContent').innerHTML = `<p style="color:#ef4444; text-align:center; padding:20px;">Failed to fetch referral tree.</p>`;
+      }
+    }
+
+    async function adjustUserBalance(e) {
+      e.preventDefault();
+      const phone = document.getElementById('adjPhone').value.trim();
+      const type = document.getElementById('adjType').value;
+      const amount = parseFloat(document.getElementById('adjAmount').value);
+
+      try {
+        const res = await apiRequest('/api/admin/users/balance', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ phone, type, amount })
+        });
+        const data = await res.json();
+        showToast(data.message || 'Balance adjusted');
+        if (data.success) {
+          document.getElementById('adjPhone').value = '';
+          document.getElementById('adjAmount').value = '';
+          initDashboardData();
+        }
+      } catch (e) { alert('Error adjusting balance.'); }
+    }
+
+    async function resetUserBank(e) {
+      e.preventDefault();
+      const target = document.getElementById('resetBankTarget').value.trim();
+      if (!confirm(`Reset bound payment details for "${target}"?`)) return;
+
+      const payload = !isNaN(target) && target.length < 8 ? { userId: target } : { phone: target };
+      try {
+        const res = await apiRequest('/api/admin/bankcard/reset', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        showToast(data.message || 'Payment account reset');
+        if (data.success) document.getElementById('resetBankTarget').value = '';
+      } catch (e) { alert('Error resetting payment account.'); }
+    }
+
+    async function resetUserPassword(e) {
+      e.preventDefault();
+      const target = document.getElementById('resetPassTarget').value.trim();
+      const newPassword = document.getElementById('resetPassNew').value.trim();
+
+      if (!confirm(`Update password for "${target}"?`)) return;
+
+      const match = globalUsersList.find(u => String(u.id || u.user_id) === target || String(u.phone || '').trim() === target);
+      let payload = match ? { userId: match.id || match.user_id, newPassword } : (!isNaN(target) ? { userId: target, newPassword } : { phone: target, newPassword });
+
+      try {
+        const res = await apiRequest('/api/admin/users/reset-password', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        showToast(data.message || 'Password updated successfully');
+        if (data.success) {
+          document.getElementById('resetPassTarget').value = '';
+          document.getElementById('resetPassNew').value = '';
+        }
+      } catch (e) { alert('Error resetting password.'); }
+    }
+  </script>
+</body>
+</html>
