@@ -803,14 +803,17 @@
     }
 
     // FIXED: Accepts event parameter, calls preventDefault(), and uses correct apiRequest option format
+    // Reset Bound Payment Account
     async function resetBoundAccount(e) {
-      e.preventDefault();
-      const inputVal = document.getElementById('resetAccountInput').value.trim();
+      if (e) e.preventDefault();
+      const inputVal = document.getElementById('resetBankTarget').value.trim();
+      
       if (!inputVal) {
         alert('Please enter a phone number or user ID.');
         return;
       }
 
+      // Determine if it's a phone number or ID
       const payload = inputVal.length > 6 && !isNaN(inputVal) && inputVal.startsWith('0') 
         ? { phone: inputVal } 
         : { userId: inputVal };
@@ -822,9 +825,10 @@
           body: JSON.stringify(payload)
         });
         const data = await res.json();
+        
         if (data.success) {
-          showToast(data.message || 'Account reset successfully');
-          document.getElementById('resetAccountInput').value = '';
+          showToast(data.message || 'Payment account reset successfully');
+          document.getElementById('resetBankTarget').value = '';
         } else {
           alert(data.message || 'Failed to reset account.');
         }
@@ -834,13 +838,13 @@
       }
     }
 
-    // FIXED: Accepts event parameter, calls preventDefault(), and uses correct apiRequest option format
+    // Reset User Password
     async function resetUserPassword(e) {
-      e.preventDefault();
-      const identifier = document.getElementById('resetPassInput').value.trim();
-      const newPassword = document.getElementById('newPasswordInput').value.trim();
+      if (e) e.preventDefault();
+      const target = document.getElementById('resetPassTarget').value.trim();
+      const newPassword = document.getElementById('resetPassNew').value.trim();
 
-      if (!identifier || !newPassword) {
+      if (!target || !newPassword) {
         alert('Please provide the user identifier and new password.');
         return;
       }
@@ -850,9 +854,12 @@
         return;
       }
 
-      const payload = identifier.length > 6 && !isNaN(identifier) && identifier.startsWith('0')
-        ? { phone: identifier, newPassword }
-        : { userId: identifier, newPassword };
+      if (!confirm(`Update password for "${target}"?`)) return;
+
+      const match = globalUsersList.find(u => String(u.id || u.user_id) === target || String(u.phone || '').trim() === target);
+      let payload = match 
+        ? { userId: match.id || match.user_id, newPassword } 
+        : (!isNaN(target) ? { userId: target, newPassword } : { phone: target, newPassword });
 
       try {
         const res = await apiRequest('/api/admin/users/reset-password', {
@@ -861,10 +868,11 @@
           body: JSON.stringify(payload)
         });
         const data = await res.json();
+        
         if (data.success) {
-          showToast(data.message || 'Password reset successfully');
-          document.getElementById('resetPassInput').value = '';
-          document.getElementById('newPasswordInput').value = '';
+          showToast(data.message || 'Password updated successfully');
+          document.getElementById('resetPassTarget').value = '';
+          document.getElementById('resetPassNew').value = '';
         } else {
           alert(data.message || 'Failed to reset password.');
         }
