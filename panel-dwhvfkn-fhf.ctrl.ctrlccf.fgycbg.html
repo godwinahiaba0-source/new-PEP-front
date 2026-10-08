@@ -678,7 +678,7 @@
             </td>
             <td>
               ${isDel ? 
-                `<button class="action-btn btn" onclick="userAction(${id}, 'restore')">Restore</button>` : 
+                `<button class="action-btn btn btn-success" onclick="userAction(${id}, 'restore')">Restore</button>` : 
                 `<button class="action-btn btn-danger" onclick="userAction(${id}, 'delete')">Delete</button>`
               }
             </td>
@@ -802,18 +802,16 @@
       } catch (e) { alert('Error adjusting balance.'); }
     }
 
-    // FIXED: Accepts event parameter, calls preventDefault(), and uses correct apiRequest option format
     // Reset Bound Payment Account
     async function resetBoundAccount(e) {
       if (e) e.preventDefault();
-      const inputVal = document.getElementById('resetBankTarget').value.trim();
+      const inputVal = document.getElementById('resetAccountInput').value.trim();
       
       if (!inputVal) {
         alert('Please enter a phone number or user ID.');
         return;
       }
 
-      // Determine if it's a phone number or ID
       const payload = inputVal.length > 6 && !isNaN(inputVal) && inputVal.startsWith('0') 
         ? { phone: inputVal } 
         : { userId: inputVal };
@@ -828,7 +826,7 @@
         
         if (data.success) {
           showToast(data.message || 'Payment account reset successfully');
-          document.getElementById('resetBankTarget').value = '';
+          document.getElementById('resetAccountInput').value = '';
         } else {
           alert(data.message || 'Failed to reset account.');
         }
@@ -841,8 +839,8 @@
     // Reset User Password
     async function resetUserPassword(e) {
       if (e) e.preventDefault();
-      const target = document.getElementById('resetPassTarget').value.trim();
-      const newPassword = document.getElementById('resetPassNew').value.trim();
+      const target = document.getElementById('resetPassInput').value.trim();
+      const newPassword = document.getElementById('newPasswordInput').value.trim();
 
       if (!target || !newPassword) {
         alert('Please provide the user identifier and new password.');
@@ -871,8 +869,8 @@
         
         if (data.success) {
           showToast(data.message || 'Password updated successfully');
-          document.getElementById('resetPassTarget').value = '';
-          document.getElementById('resetPassNew').value = '';
+          document.getElementById('resetPassInput').value = '';
+          document.getElementById('newPasswordInput').value = '';
         } else {
           alert(data.message || 'Failed to reset password.');
         }
