@@ -85,8 +85,32 @@
       return localStorage.getItem('adminToken') || localStorage.getItem('token') || localStorage.getItem('jwt') || '';
     }
     if (!getStoredToken()) {
-      window.location.href = 'admin-login.html';
+      window.location.href = 'godwingenius.html';
     }
+
+    // 5-Minute Inactivity Auto-Logout Mechanism
+    let inactivityTimer;
+    const INACTIVITY_TIMEOUT = 5 * 60 * 1000; // 5 minutes in milliseconds
+
+    function logoutAdminSession() {
+      localStorage.removeItem('adminToken');
+      localStorage.removeItem('token');
+      localStorage.removeItem('jwt');
+      alert('Session expired due to 5 minutes of inactivity.');
+      window.location.href = 'admin.html';
+    }
+
+    function resetInactivityTimer() {
+      clearTimeout(inactivityTimer);
+      inactivityTimer = setTimeout(logoutAdminSession, INACTIVITY_TIMEOUT);
+    }
+
+    // Track user activities across the dashboard
+    window.onload = resetInactivityTimer;
+    document.onmousemove = resetInactivityTimer;
+    document.onkeypress = resetInactivityTimer;
+    document.onclick = resetInactivityTimer;
+    document.onscroll = resetInactivityTimer;
   </script>
 
   <div class="container">
