@@ -21,7 +21,6 @@
   }
 </script>
 
-  <!-- Font Awesome for Bottom Nav Icons & Speaker Icon -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
     * {
@@ -440,14 +439,12 @@
 
   <div class="app-container">
 
-    <!-- Top Banner Image Slider Container -->
     <div class="banner-wrapper">
       <div class="top-banner">
         <img id="bannerImage" src="banner123.jpg" alt="Hero Banner" class="banner-slide fade-in">
       </div>
     </div>
 
-    <!-- Marquee Notification Bar with Unmovable Red Speaker Icon -->
     <div class="notice-bar">
       <i class="fa-solid fa-bullhorn notice-speaker-icon"></i>
       <div class="notice-marquee-wrapper">
@@ -457,7 +454,6 @@
       </div>
     </div>
 
-    <!-- 4 Action Grid Buttons -->
     <div class="action-grid">
       <a href="recharge.html" class="grid-btn btn-recharge">Recharge</a>
       <a href="withdraw.html" class="grid-btn btn-withdraw">Withdrawal</a>
@@ -465,7 +461,6 @@
       <a href="yf-life fund.html" class="grid-btn btn-fund">YF Life fund</a>
     </div>
 
-    <!-- Promo Section -->
     <div class="promo-section">
       <a href="platform-intro.html" class="pill-banner banner-intro">
         <div class="banner-icon">
@@ -508,7 +503,6 @@
       </a>
     </div>
 
-    <!-- Live Vertically Scrolling Membership List -->
     <div class="membership-container">
       <h3 class="membership-title">Membership list</h3>
       
@@ -572,7 +566,6 @@
           </div>
 
 
-          <!-- Duplicated Items for Seamless Infinite Vertical Loop -->
           <div class="member-item">
             <div class="member-user-info">
               <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100&q=80" class="member-avatar" alt="user">
@@ -584,7 +577,6 @@
       </div>
     </div>
 
-    <!-- Bottom Navigation Bar (Matched to me.html) -->
     <nav class="bottom-nav">
       <a href="home.html" class="nav-item active">
         <i class="fa-solid fa-house"></i>
@@ -610,7 +602,6 @@
 
   </div>
 
-  <!-- EXACT MATCH NOTICE POPUP MODAL -->
   <div class="notice-modal-overlay" id="noticeModal">
     <div class="notice-modal-card">
       <div class="notice-modal-inner">
@@ -621,7 +612,7 @@
     </div>
   </div>
 
-  <!-- Scripts -->
+  <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
   <script src="config.js"></script>
   <script src="toast.js"></script>
 
@@ -657,7 +648,7 @@
         modal.style.display = 'none';
       });
 
-      // Helper function to show popup if notice is not dismissed
+      // Helper function to show popup if notice is active
       function displayModalNoticeIfNeeded(noticeObj) {
         if (!noticeObj) return;
 
@@ -666,7 +657,7 @@
 
         if (typeof noticeObj === 'string') {
           noticeMessage = noticeObj;
-          noticeId = noticeObj; // Use raw message text as key if no ID exists
+          noticeId = noticeObj; 
         } else if (typeof noticeObj === 'object') {
           noticeMessage = noticeObj.message || noticeObj.popupNotice || '';
           noticeId = noticeObj.id || noticeMessage;
@@ -687,12 +678,15 @@
       // Direct Notice Endpoint Fetch Fallback
       async function fetchStandaloneNotice() {
         try {
-          const baseUrl = 'pep-back-production.up.railway.app';
+          const baseUrl = typeof API_BASE_URL !== 'undefined' ? API_BASE_URL : '';
           const response = await fetch(`${baseUrl}/api/notice`);
           const data = await response.json();
 
           if (data.success && data.notice) {
             displayModalNoticeIfNeeded(data.notice);
+            if (data.notice.message) {
+              document.getElementById('noticeMarquee').innerText = data.notice.message;
+            }
           }
         } catch (err) {
           console.warn("Standalone notice fetch skipped or unavailable:", err);
@@ -701,12 +695,11 @@
 
       // Dynamic Backend Fetching
       async function fetchHomeData() {
-  const token = localStorage.getItem('userToken');
-  let fetchedHomeData = false;
-  const baseUrl = 'pep-back-production.up.railway.app';
+        const token = localStorage.getItem('userToken');
+        let fetchedHomeData = false;
 
         try {
-          const baseUrl = 'pep-back-production.up.railway.app';
+          const baseUrl = typeof API_BASE_URL !== 'undefined' ? API_BASE_URL : '';
           const response = await fetch(`${baseUrl}/api/home/config`, {
             headers: {
               'Content-Type': 'application/json',
@@ -757,6 +750,17 @@
       }
 
       fetchHomeData();
+
+      // Real-time Socket.io updates for admin global notices
+      if (typeof io !== 'undefined') {
+        const socket = io();
+        socket.on('global_notice_updated', (data) => {
+          if (data && data.message) {
+            document.getElementById('noticeMarquee').innerText = data.message;
+            displayModalNoticeIfNeeded(data.message);
+          }
+        });
+      }
     })();
   </script>
 
