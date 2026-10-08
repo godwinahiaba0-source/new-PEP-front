@@ -564,61 +564,60 @@
     }
 
     async function loadWithdrawals() {
-  const tbody = document.getElementById('withdrawalsTableBody');
-  try {
-    const res = await apiRequest('/api/admin/withdrawals');
-    const data = await res.json();
-    const list = data.withdrawals || data.data || [];
-    let pending = 0;
+      const tbody = document.getElementById('withdrawalsTableBody');
+      try {
+        const res = await apiRequest('/api/admin/withdrawals');
+        const data = await res.json();
+        const list = data.withdrawals || data.data || [];
+        let pending = 0;
 
-    if (!list.length) {
-      tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #9ca3af;">No withdrawal records found.</td></tr>`;
-      document.getElementById('statPendingWithdrawals').innerText = '0';
-      return;
+        if (!list.length) {
+          tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #9ca3af;">No withdrawal records found.</td></tr>`;
+          document.getElementById('statPendingWithdrawals').innerText = '0';
+          return;
+        }
+
+        tbody.innerHTML = list.map(tx => {
+          const status = (tx.status || 'pending').toLowerCase();
+          if (status === 'pending') pending++;
+          const badge = status === 'approved' ? 'badge-approved' : (status === 'rejected' ? 'badge-rejected' : 'badge-pending');
+          
+          const channel = tx.bank_channel || tx.channel || 'MoMo';
+          const name = tx.bank_official_name || tx.official_name || 'N/A';
+          const acc = tx.bank_account_number || tx.account_number || tx.channel_number || 'N/A';
+
+          const gross = parseFloat(tx.gross_amount || tx.amount || 0);
+          const fee = parseFloat(tx.fee_amount || tx.fee || 0);
+          const net = parseFloat(tx.net_amount || (gross - fee));
+
+          const txId = tx.id || tx.transaction_id;
+          return `
+            <tr>
+              <td>#${txId}</td>
+              <td><strong>${tx.phone || tx.user_phone || 'N/A'}</strong></td>
+              <td>
+                <div style="background:#030712; padding:6px; border-radius:4px; font-size:0.75rem; border:1px solid #1f2937;">
+                  <div><strong>Channel:</strong> <span style="color:#38bdf8">${channel}</span></div>
+                  <div><strong>Name:</strong> ${name}</div>
+                  <div><strong>Acc:</strong> <span class="copy-pill" onclick="copyText('${acc}')">${acc} 📋</span></div>
+                </div>
+              </td>
+              <td style="color:#22c55e; font-weight:bold;">${net.toFixed(2)} GHS<br><small style="color:#9ca3af; font-size:0.65rem;">Gross: ${gross.toFixed(2)}</small></td>
+              <td><span class="badge ${badge}">${status.toUpperCase()}</span></td>
+              <td>
+                ${status === 'pending' ? `
+                  <button class="action-btn btn-success" onclick="procWithdrawal(${txId}, 'approve')">Approve</button>
+                  <button class="action-btn btn-danger" onclick="procWithdrawal(${txId}, 'reject')">Reject</button>
+                ` : '<span style="color:#6b7280; font-size:0.75rem;">Processed</span>'}
+              </td>
+            </tr>
+          `;
+        }).join('');
+        document.getElementById('statPendingWithdrawals').innerText = pending;
+      } catch (e) {
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #ef4444;">Failed to load withdrawals.</td></tr>`;
+      }
     }
-
-    tbody.innerHTML = list.map(tx => {
-      const status = (tx.status || 'pending').toLowerCase();
-      if (status === 'pending') pending++;
-      const badge = status === 'approved' ? 'badge-approved' : (status === 'rejected' ? 'badge-rejected' : 'badge-pending');
-      
-      // Fetch details directly from the bank_cards table join
-      const channel = tx.bank_channel || tx.channel || 'MoMo';
-      const name = tx.bank_official_name || tx.official_name || 'N/A';
-      const acc = tx.bank_account_number || tx.account_number || tx.channel_number || 'N/A';
-
-      const gross = parseFloat(tx.gross_amount || tx.amount || 0);
-      const fee = parseFloat(tx.fee_amount || tx.fee || 0);
-      const net = parseFloat(tx.net_amount || (gross - fee));
-
-      const txId = tx.id || tx.transaction_id;
-      return `
-        <tr>
-          <td>#${txId}</td>
-          <td><strong>${tx.phone || tx.user_phone || 'N/A'}</strong></td>
-          <td>
-            <div style="background:#030712; padding:6px; border-radius:4px; font-size:0.75rem; border:1px solid #1f2937;">
-              <div><strong>Channel:</strong> <span style="color:#38bdf8">${channel}</span></div>
-              <div><strong>Name:</strong> ${name}</div>
-              <div><strong>Acc:</strong> <span class="copy-pill" onclick="copyText('${acc}')">${acc} 📋</span></div>
-            </div>
-          </td>
-          <td style="color:#22c55e; font-weight:bold;">${net.toFixed(2)} GHS<br><small style="color:#9ca3af; font-size:0.65rem;">Gross: ${gross.toFixed(2)}</small></td>
-          <td><span class="badge ${badge}">${status.toUpperCase()}</span></td>
-          <td>
-            ${status === 'pending' ? `
-              <button class="action-btn btn-success" onclick="procWithdrawal(${txId}, 'approve')">Approve</button>
-              <button class="action-btn btn-danger" onclick="procWithdrawal(${txId}, 'reject')">Reject</button>
-            ` : '<span style="color:#6b7280; font-size:0.75rem;">Processed</span>'}
-          </td>
-        </tr>
-      `;
-    }).join('');
-    document.getElementById('statPendingWithdrawals').innerText = pending;
-  } catch (e) {
-    tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #ef4444;">Failed to load withdrawals.</td></tr>`;
-  }
-}
 
     async function procWithdrawal(id, action) {
       if (!confirm(`Are you sure you want to ${action} withdrawal #${id}?`)) return;
@@ -806,32 +805,36 @@
       } catch (e) { alert('Error adjusting balance.'); }
     }
 
-    async function resetBoundAccount() {
-  const inputVal = document.getElementById('resetAccountInput').value.trim();
-  if (!inputVal) {
-    alert('Please enter a phone number or user ID.');
-    return;
-  }
+    // FIXED: Properly hooks into form submission, handles preventDefault, and matches apiRequest options structure
+    async function resetUserBank(e) {
+      e.preventDefault();
+      const target = document.getElementById('resetBankTarget').value.trim();
+      if (!target) {
+        alert('Please enter a phone number or user ID.');
+        return;
+      }
 
-  // Determine if it's a phone number or ID
-  const payload = inputVal.length > 6 && !isNaN(inputVal) && inputVal.startsWith('0') 
-    ? { phone: inputVal } 
-    : { userId: inputVal };
+      const match = globalUsersList.find(u => String(u.id || u.user_id) === target || String(u.phone || '').trim() === target);
+      let payload = match ? { userId: match.id || match.user_id } : (!isNaN(target) ? { userId: target } : { phone: target });
 
-  try {
-    const res = await apiRequest('/api/admin/bankcard/reset', 'POST', payload);
-    const data = await res.json();
-    if (data.success) {
-      alert(data.message);
-      document.getElementById('resetAccountInput').value = '';
-    } else {
-      alert(data.message || 'Failed to reset account.');
+      try {
+        const res = await apiRequest('/api/admin/bankcard/reset', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        showToast(data.message || 'Payment account reset successfully');
+        if (data.success) {
+          document.getElementById('resetBankTarget').value = '';
+        } else {
+          alert(data.message || 'Failed to reset account.');
+        }
+      } catch (e) {
+        console.error(e);
+        alert('Server error resetting payment account.');
+      }
     }
-  } catch (e) {
-    console.error(e);
-    alert('Server error resetting payment account.');
-  }
-}
 
     async function resetUserPassword(e) {
       e.preventDefault();
