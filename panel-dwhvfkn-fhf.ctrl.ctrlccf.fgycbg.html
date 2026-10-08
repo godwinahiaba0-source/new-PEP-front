@@ -833,40 +833,30 @@
   }
 }
 
-    async function resetUserPassword() {
-  const identifier = document.getElementById('resetPassInput').value.trim();
-  const newPassword = document.getElementById('newPasswordInput').value.trim();
+    async function resetUserPassword(e) {
+      e.preventDefault();
+      const target = document.getElementById('resetPassTarget').value.trim();
+      const newPassword = document.getElementById('resetPassNew').value.trim();
 
-  if (!identifier || !newPassword) {
-    alert('Please provide the user identifier and new password.');
-    return;
-  }
+      if (!confirm(`Update password for "${target}"?`)) return;
 
-  if (newPassword.length < 6) {
-    alert('Password must be at least 6 characters.');
-    return;
-  }
+      const match = globalUsersList.find(u => String(u.id || u.user_id) === target || String(u.phone || '').trim() === target);
+      let payload = match ? { userId: match.id || match.user_id, newPassword } : (!isNaN(target) ? { userId: target, newPassword } : { phone: target, newPassword });
 
-  // Determine if it's phone or ID
-  const payload = identifier.length > 6 && !isNaN(identifier) && identifier.startsWith('0')
-    ? { phone: identifier, newPassword }
-    : { userId: identifier, newPassword };
-
-  try {
-    const res = await apiRequest('/api/admin/users/reset-password', 'POST', payload);
-    const data = await res.json();
-    if (data.success) {
-      alert(data.message);
-      document.getElementById('resetPassInput').value = '';
-      document.getElementById('newPasswordInput').value = '';
-    } else {
-      alert(data.message || 'Failed to reset password.');
+      try {
+        const res = await apiRequest('/api/admin/users/reset-password', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        showToast(data.message || 'Password updated successfully');
+        if (data.success) {
+          document.getElementById('resetPassTarget').value = '';
+          document.getElementById('resetPassNew').value = '';
+        }
+      } catch (e) { alert('Error resetting password.'); }
     }
-  } catch (e) {
-    console.error(e);
-    alert('Server error updating password.');
-  }
-}
   </script>
 </body>
 </html>
