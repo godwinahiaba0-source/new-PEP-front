@@ -806,23 +806,32 @@
       } catch (e) { alert('Error adjusting balance.'); }
     }
 
-    async function resetUserBank(e) {
-      e.preventDefault();
-      const target = document.getElementById('resetBankTarget').value.trim();
-      if (!confirm(`Reset bound payment details for "${target}"?`)) return;
+    async function resetBoundAccount() {
+  const inputVal = document.getElementById('resetAccountInput').value.trim();
+  if (!inputVal) {
+    alert('Please enter a phone number or user ID.');
+    return;
+  }
 
-      const payload = !isNaN(target) && target.length < 8 ? { userId: target } : { phone: target };
-      try {
-        const res = await apiRequest('/api/admin/bankcard/reset', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
-        });
-        const data = await res.json();
-        showToast(data.message || 'Payment account reset');
-        if (data.success) document.getElementById('resetBankTarget').value = '';
-      } catch (e) { alert('Error resetting payment account.'); }
+  // Determine if it's a phone number or ID
+  const payload = inputVal.length > 6 && !isNaN(inputVal) && inputVal.startsWith('0') 
+    ? { phone: inputVal } 
+    : { userId: inputVal };
+
+  try {
+    const res = await apiRequest('/api/admin/bankcard/reset', 'POST', payload);
+    const data = await res.json();
+    if (data.success) {
+      alert(data.message);
+      document.getElementById('resetAccountInput').value = '';
+    } else {
+      alert(data.message || 'Failed to reset account.');
     }
+  } catch (e) {
+    console.error(e);
+    alert('Server error resetting payment account.');
+  }
+}
 
     async function resetUserPassword(e) {
       e.preventDefault();
