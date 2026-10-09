@@ -256,7 +256,7 @@
       <div class="form-row">
         <span class="form-label">Withdrawal<br>amount</span>
         <div class="form-input-wrapper">
-          <input type="number" id="withdraw-amount" class="form-input" placeholder="Please input the withdrawal amount" oninput="updateCalculations()">
+          <input type="number" id="withdraw-amount" class="form-input" placeholder="Min. withdrawal 20.00 GHS" oninput="updateCalculations()">
         </div>
       </div>
 
@@ -377,7 +377,6 @@
           if (res.ok) {
             const data = await res.json();
             
-            // Extract balance safely from whatever format the server returned
             const payload = data.user || data.data || data.profile || data;
             const balance = payload.balance !== undefined ? payload.balance : (data.balance !== undefined ? data.balance : 0);
             
@@ -535,8 +534,9 @@
       const amount = parseFloat(document.getElementById('withdraw-amount').value) || 0;
       const password = document.getElementById('fund-password').value.trim();
 
-      if (!amount || amount <= 0) {
-        notifyUser("Please enter a valid withdrawal amount.", "warning");
+      // Enforce minimum 20 GHS check on frontend
+      if (!amount || amount < 20) {
+        notifyUser("Minimum withdrawal amount is 20.00 GHS.", "warning");
         return;
       }
 
@@ -571,7 +571,6 @@
         password: password
       };
 
-      // Instantly lock button to prevent double-clicks/spam
       submitBtn.disabled = true;
       submitBtn.textContent = 'Submitting...';
 
