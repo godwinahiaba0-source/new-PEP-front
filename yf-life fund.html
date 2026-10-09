@@ -522,25 +522,29 @@
           }
         });
         const result = await response.json();
+        
         if (result.success) {
-          // Check nested summary object first, then fall back to top-level or calculate from investments array
-          let activeAmt = 0;
-          let dailyEarn = 0;
+          let totalActive = 0;
+          let totalDailyEarnings = 0;
 
-          if (result.summary) {
-            activeAmt = result.summary.activeInvested || 0;
-            dailyEarn = result.summary.todaysEarnings || 0;
-          } else if (result.activeInvested !== undefined) {
-            activeAmt = result.activeInvested;
-            dailyEarn = result.todaysEarnings;
-          } else if (result.investments && Array.isArray(result.investments)) {
-            activeAmt = result.investments
-              .filter(inv => inv.status && inv.status.toLowerCase() === 'active')
-              .reduce((sum, inv) => sum + parseFloat(inv.invested_amount || 0), 0);
+          // Directly calculate from the investments array returned by backend
+          if (result.investments && Array.isArray(result.investments)) {
+            result.investments.forEach(inv => {
+              if (inv.status && inv.status.toLowerCase() === 'active') {
+                const invested = parseFloat(inv.invested_amount || 0);
+                totalActive += invested;
+
+                const profitPercent = parseFloat(inv.daily_profit_percentage || 2.00);
+                const durationDays = parseInt(inv.duration_days || 3);
+                
+                const totalProfit = invested * (profitPercent / 100);
+                totalDailyEarnings += totalProfit / durationDays;
+              }
+            });
           }
 
-          document.getElementById('active-invested').textContent = parseFloat(activeAmt).toFixed(2);
-          document.getElementById('todays-earnings').textContent = parseFloat(dailyEarn).toFixed(2);
+          document.getElementById('active-invested').textContent = totalActive.toFixed(2);
+          document.getElementById('todays-earnings').textContent = totalDailyEarnings.toFixed(2);
         }
       } catch (error) {
         console.error('Error loading fund summary metrics:', error);
