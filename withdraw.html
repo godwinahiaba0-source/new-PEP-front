@@ -122,10 +122,11 @@
       font-weight: 500;
     }
 
+    /* Withdrawal amounts set to match balance blue/neutral theme */
     .balance-value {
       font-size: 0.95rem;
       font-weight: 600;
-      color: #333333;
+      color: #007aff; 
     }
 
     /* FORM INPUT ROWS */
@@ -214,7 +215,9 @@
     }
 
     .btn-submit:disabled {
-      background-color: #fca5a5;
+      background-color: #d1d5db;
+      color: #9ca3af;
+      box-shadow: none;
       cursor: not-allowed;
     }
 
@@ -304,7 +307,6 @@
       window.location.href = 'bankcard.html';
     }
 
-    // Universal scanner: checks known keys AND deep-searches all localStorage keys for card data
     function getStoredCard() {
       const specificKeys = [
         'userBankCard', 'bankCard', 'bank_card', 'pepsi_bound_bank', 
@@ -326,28 +328,6 @@
           }
         } catch (e) {}
       }
-
-      for (let i = 0; i < localStorage.length; i++) {
-        const keyName = localStorage.key(i);
-        try {
-          const rawVal = localStorage.getItem(keyName);
-          if (!rawVal) continue;
-          const parsed = JSON.parse(rawVal);
-
-          if (Array.isArray(parsed)) {
-            for (const entry of parsed) {
-              if (entry && typeof entry === 'object' && (entry.account_number || entry.accountNumber || entry.account || entry.phone || entry.channel || entry.bankName)) {
-                return entry;
-              }
-            }
-          } else if (parsed && typeof parsed === 'object') {
-            if (parsed.account_number || parsed.accountNumber || parsed.account || parsed.phone || parsed.channel || parsed.bankName || parsed.bank) {
-              return parsed;
-            }
-          }
-        } catch (e) {}
-      }
-
       return null;
     }
 
@@ -369,41 +349,42 @@
       }
 
       if (token) {
-        // 1. Fetch balance using proper baseUrl
+        // 1. Fetch balance
         try {
           const res = await fetch(`${baseUrl}/api/user/profile`, {
             headers: { 'Authorization': `Bearer ${token}` }
           });
           if (res.ok) {
             const data = await res.json();
-            
             const payload = data.user || data.data || data.profile || data;
             const balance = payload.balance !== undefined ? payload.balance : (data.balance !== undefined ? data.balance : 0);
-            
             document.getElementById('display-balance').textContent = parseFloat(balance).toFixed(2);
           }
         } catch (e) {
           console.error('Failed to load profile:', e);
         }
 
-        // 2. Check for active/pending withdrawal requests
+        // 2. Check for active/pending withdrawal requests and lock submit button if found
         try {
           const statusRes = await fetch(`${baseUrl}/api/withdraw/history`, {
             headers: { 'Authorization': `Bearer ${token}` }
           });
           if (statusRes.ok) {
             const histData = await statusRes.json();
-            const records = histData.data || histData.withdrawals || histData || [];
+            const records = histData.data || histData.history || histData.withdrawals || histData || [];
+            
             const hasPending = Array.isArray(records) && records.some(r => {
               const s = String(r.status || '').toLowerCase();
               return s === 'pending' || s === 'processing' || s === 'requested' || s === 'under_review';
             });
 
             if (hasPending) {
-              lockFormWithWarning("You already have an active withdrawal request being processed.");
+              lockFormWithWarning("You have a pending withdrawal request. New requests are locked until completed.");
             }
           }
-        } catch (e) {}
+        } catch (e) {
+          console.error('Failed to check withdrawal history:', e);
+        }
 
         // 3. Fetch card from backend if local storage is empty
         if (!activeCard) {
@@ -432,7 +413,7 @@
 
       if (submitBtn) {
         submitBtn.disabled = true;
-        submitBtn.textContent = 'Active Request Pending';
+        submitBtn.textContent = 'Pending Withdrawal Exists';
       }
       if (amountInput) amountInput.disabled = true;
       if (passwordInput) passwordInput.disabled = true;
@@ -534,7 +515,6 @@
       const amount = parseFloat(document.getElementById('withdraw-amount').value) || 0;
       const password = document.getElementById('fund-password').value.trim();
 
-      // Enforce minimum 20 GHS check on frontend
       if (!amount || amount < 20) {
         notifyUser("Minimum withdrawal amount is 20.00 GHS.", "warning");
         return;
@@ -578,10 +558,10 @@
       const baseUrl = resolveBaseUrl();
 
       const endpoints = [
-        `https://pep-back-production.up.railway.app/api/withdraw/request`,
-        `https://pep-back-production.up.railway.app/api/withdraw/submit`,
-        `https://pep-back-production.up.railway.app/api/user/withdraw`,
-        `https://pep-back-production.up.railway.app/api/wallet/withdraw`
+        `${baseUrl}/api/withdraw/request`,
+        `${baseUrl}/api/withdraw/submit`,
+        `${baseUrl}/api/user/withdraw`,
+        `${baseUrl}/api/wallet/withdraw`
       ];
 
       let success = false;
