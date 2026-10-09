@@ -523,14 +523,24 @@
         });
         const result = await response.json();
         if (result.success) {
-          let totalActive = 0;
-          if (result.investments && Array.isArray(result.investments)) {
-            totalActive = result.investments
-              .filter(inv => inv.status === 'active')
+          // Check nested summary object first, then fall back to top-level or calculate from investments array
+          let activeAmt = 0;
+          let dailyEarn = 0;
+
+          if (result.summary) {
+            activeAmt = result.summary.activeInvested || 0;
+            dailyEarn = result.summary.todaysEarnings || 0;
+          } else if (result.activeInvested !== undefined) {
+            activeAmt = result.activeInvested;
+            dailyEarn = result.todaysEarnings;
+          } else if (result.investments && Array.isArray(result.investments)) {
+            activeAmt = result.investments
+              .filter(inv => inv.status && inv.status.toLowerCase() === 'active')
               .reduce((sum, inv) => sum + parseFloat(inv.invested_amount || 0), 0);
           }
-          document.getElementById('active-invested').textContent = totalActive.toFixed(2);
-          document.getElementById('todays-earnings').textContent = parseFloat(result.todaysEarnings || 0).toFixed(2);
+
+          document.getElementById('active-invested').textContent = parseFloat(activeAmt).toFixed(2);
+          document.getElementById('todays-earnings').textContent = parseFloat(dailyEarn).toFixed(2);
         }
       } catch (error) {
         console.error('Error loading fund summary metrics:', error);
