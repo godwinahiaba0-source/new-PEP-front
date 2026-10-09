@@ -124,7 +124,7 @@
                 <span class="record-date">${formatDate(item.created_at)}</span>
               </div>
               <div class="record-row">
-                <span class="record-amount" style="color: #e57373;">-${parseFloat(Math.abs(item.net_amount || item.amount || 0)).toFixed(2)} GHS</span>
+                <span class="record-amount">-${parseFloat(Math.abs(item.net_amount || item.amount || 0)).toFixed(2)} GHS</span>
                 <span class="${statusClass}">${statusText}</span>
               </div>
             `;
