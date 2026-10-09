@@ -379,7 +379,7 @@
   <div class="app-container">
     <!-- Sticky Header -->
     <div class="header">
-      <a href="/me" class="back-btn"><i class="fa-solid fa-chevron-left"></i> Back</a>
+      <a href="me.html" class="back-btn"><i class="fa-solid fa-chevron-left"></i> Back</a>
       <span class="header-title">YF Life Fund</span>
       <button class="records-top-btn" onclick="openRecordsModal()">Records</button>
     </div>
@@ -466,7 +466,7 @@
     document.addEventListener('DOMContentLoaded', () => {
       const token = localStorage.getItem('userToken') || localStorage.getItem('token');
       if (!token) {
-        window.location.href = '/auth';
+        window.location.href = 'auth.html';
         return;
       }
       loadWealthPlans();
