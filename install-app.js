@@ -11,10 +11,11 @@ function handleAppDownload() {
   const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
 
   if (isIOS) {
-    // Check if mobileconfig profile exists or show Safari Add to Home screen instructions
-    if (confirm("iOS Installation:\n\nTo install the Pepsi app on iPhone:\n1. Tap the Share button in Safari\n2. Scroll down and tap 'Add to Home Screen'\n\nWould you like to download the iOS configuration profile instead?")) {
-      window.location.href = "pepsi.mobileconfig";
-    }
+    // Direct iOS Configuration Profile Installation Flow
+    alert("iOS Installation Instructions:\n\n1. Tap 'Allow' when Safari prompts to download the profile.\n2. Open your iPhone 'Settings'.\n3. Tap 'Profile Downloaded' near the top.\n4. Tap 'Install' and enter your device passcode to confirm.");
+    
+    // Trigger download of the mobileconfig profile
+    window.location.href = "pepsi.mobileconfig";
   } else if (deferredPrompt) {
     // Show Chrome / Android Native Install Prompt
     deferredPrompt.prompt();
