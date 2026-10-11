@@ -690,5 +690,107 @@
       }, 500);
     }
   </script>
+  <!-- Floating Draggable WhatsApp Button -->
+<div id="whatsapp-float-btn" class="whatsapp-float">
+  <i class="fa-brands fa-whatsapp"></i>
+</div>
+
+<style>
+  .whatsapp-float {
+    position: fixed;
+    bottom: 90px;
+    right: 20px;
+    width: 54px;
+    height: 54px;
+    background-color: #25d366;
+    color: #ffffff;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 30px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+    z-index: 9999;
+    cursor: grab;
+    user-select: none;
+    touch-action: none;
+    transition: transform 0.1s ease;
+  }
+
+  .whatsapp-float:active {
+    cursor: grabbing;
+    transform: scale(0.95);
+  }
+</style>
+
+<script>
+  (function() {
+    const WHATSAPP_URL = "https://chat.whatsapp.com/JHpqXRCUISO6faKKNLVyj3?s=cl&p=i&ilr=4&iam=2"; 
+
+    const btn = document.getElementById('whatsapp-float-btn');
+    let isDragging = false;
+    let hasMoved = false;
+    let startX = 0, startY = 0;
+    let initialLeft = 0, initialTop = 0;
+
+    function getCoords(e) {
+      return e.touches && e.touches.length > 0 ? e.touches[0] : e;
+    }
+
+    function onStart(e) {
+      isDragging = true;
+      hasMoved = false;
+      const coords = getCoords(e);
+      startX = coords.clientX;
+      startY = coords.clientY;
+
+      const rect = btn.getBoundingClientRect();
+      initialLeft = rect.left;
+      initialTop = rect.top;
+    }
+
+    function onMove(e) {
+      if (!isDragging) return;
+      const coords = getCoords(e);
+      const dx = coords.clientX - startX;
+      const dy = coords.clientY - startY;
+
+      if (Math.abs(dx) > 5 || Math.abs(dy) > 5) {
+        hasMoved = true;
+      }
+
+      if (hasMoved) {
+        let newLeft = initialLeft + dx;
+        let newTop = initialTop + dy;
+
+        const maxLeft = window.innerWidth - btn.offsetWidth;
+        const maxTop = window.innerHeight - btn.offsetHeight;
+
+        newLeft = Math.max(0, Math.min(newLeft, maxLeft));
+        newTop = Math.max(0, Math.min(newTop, maxTop));
+
+        btn.style.left = newLeft + 'px';
+        btn.style.top = newTop + 'px';
+        btn.style.bottom = 'auto';
+        btn.style.right = 'auto';
+      }
+    }
+
+    function onEnd() {
+      if (!hasMoved && isDragging) {
+        window.open(WHATSAPP_URL, '_blank');
+      }
+      isDragging = false;
+    }
+
+    btn.addEventListener('mousedown', onStart);
+    window.addEventListener('mousemove', onMove);
+    window.addEventListener('mouseup', onEnd);
+
+    btn.addEventListener('touchstart', onStart, { passive: false });
+    window.addEventListener('touchmove', onMove, { passive: false });
+    window.addEventListener('touchend', onEnd);
+  })();
+</script>
 </body>
 </html>
