@@ -556,11 +556,9 @@
       const token = localStorage.getItem('token') || localStorage.getItem('userToken');
       const baseUrl = resolveBaseUrl();
 
+      // Use only the protected endpoint that checks withdrawal permissions
       const endpoints = [
-        `${baseUrl}/api/withdraw/request`,
-        `${baseUrl}/api/withdraw/submit`,
-        `${baseUrl}/api/user/withdraw`,
-        `${baseUrl}/api/wallet/withdraw`
+        `${baseUrl}/api/user/withdraw`
       ];
 
       let success = false;
