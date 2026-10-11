@@ -122,7 +122,6 @@
       font-weight: 500;
     }
 
-    /* Withdrawal amounts set to match balance blue/neutral theme */
     .balance-value {
       font-size: 0.95rem;
       font-weight: 600;
@@ -300,7 +299,7 @@
       if (hostname === 'localhost' || hostname === '127.0.0.1') {
         return 'http://localhost:8080';
       }
-      return 'http://pep-back-production.up.railway.app';
+      return 'https://pep-back-production.up.railway.app';
     }
 
     function redirectToBind() {
@@ -589,6 +588,7 @@
               success = true;
               break;
             } else if (responseData.message) {
+              // Displays exact backend response message like "withdrawal function not enabled"
               notifyUser(responseData.message, "error");
               submitBtn.disabled = false;
               submitBtn.textContent = 'Submit';
@@ -606,7 +606,12 @@
           window.location.href = 'wrec.html';
         }, 1200);
       } else {
-        notifyUser("Withdrawal request failed. Please try again.", "error");
+        // If the endpoints returned a specific error message payload (e.g. 400 status with "withdrawal function not enabled")
+        if (responseData && responseData.message) {
+          notifyUser(responseData.message, "error");
+        } else {
+          notifyUser("Withdrawal request failed. Please try again.", "error");
+        }
         submitBtn.disabled = false;
         submitBtn.textContent = 'Submit';
       }
