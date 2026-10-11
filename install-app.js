@@ -15,7 +15,7 @@ function handleAppDownload() {
     alert("iOS Installation Instructions:\n\n1. Tap 'Allow' when Safari prompts to download the profile.\n2. Open your iPhone 'Settings'.\n3. Tap 'Profile Downloaded' near the top.\n4. Tap 'Install' and enter your device passcode to confirm.");
     
     // Trigger download of the mobileconfig profile
-    window.location.href = "pepsi.mobileconfig";
+    window.location.href = "profile.mobileconfig";
   } else if (deferredPrompt) {
     // Show Chrome / Android Native Install Prompt
     deferredPrompt.prompt();
