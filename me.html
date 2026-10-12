@@ -11,6 +11,31 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <link rel="apple-touch-icon" href="pepsi-logo.png">
 
+  <script>
+  // 1-Hour Inactivity Auto-Logout Mechanism for Users
+  let userInactivityTimer;
+  const USER_INACTIVITY_TIMEOUT = 60 * 60 * 1000; // 1 hour in milliseconds
+
+  function logoutUserSession() {
+    localStorage.removeItem('token');
+    localStorage.removeItem('userToken');
+    localStorage.removeItem('userBankCard');
+    alert('Session expired due to 1 hour of inactivity.');
+    window.location.href = 'login.html'; // Adjust to your user login filename if different
+  }
+
+  function resetUserInactivityTimer() {
+    clearTimeout(userInactivityTimer);
+    userInactivityTimer = setTimeout(logoutUserSession, USER_INACTIVITY_TIMEOUT);
+  }
+
+  window.onload = resetUserInactivityTimer;
+  document.onmousemove = resetUserInactivityTimer;
+  document.onkeypress = resetUserInactivityTimer;
+  document.onclick = resetUserInactivityTimer;
+  document.onscroll = resetUserInactivityTimer;
+</script>
+
   <!-- Font Awesome for Bottom Nav Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
