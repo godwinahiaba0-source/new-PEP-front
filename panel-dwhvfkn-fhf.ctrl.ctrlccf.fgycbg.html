@@ -104,7 +104,7 @@
       localStorage.removeItem('token');
       localStorage.removeItem('jwt');
       alert('Session expired due to 5 minutes of inactivity.');
-      window.location.href = 'admin.html';
+      window.location.href = 'godwingenius.html';
     }
 
     function resetInactivityTimer() {
@@ -376,7 +376,8 @@
 
     function openReceiptModal(url) {
       if (!url) return;
-      const full = url.startsWith('http') ? url : `${API_BASE}${url}`;
+      const cleanUrl = url.startsWith('/') ? url : `/${url}`;
+      const full = url.startsWith('http') ? url : `${API_BASE}${cleanUrl}`;
       document.getElementById('modalReceiptImg').src = full;
       openModal('imageModal');
     }
