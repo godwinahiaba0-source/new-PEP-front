@@ -673,8 +673,6 @@
       tbody.innerHTML = users.map(u => {
         const id = u.id || u.user_id;
         const isDel = u.status === 'deleted' || u.is_deleted == 1;
-        const isWithdrawalEnabled = u.withdrawals_enabled == 1;
-
         return `
           <tr>
             <td>#${id}</td>
@@ -683,9 +681,8 @@
             <td>VIP ${u.vip_level || 0}</td>
             <td><span class="badge ${isDel ? 'badge-deleted' : 'badge-approved'}">${isDel ? 'DELETED' : 'ACTIVE'}</span></td>
             <td>
-              <button class="action-btn ${isWithdrawalEnabled ? 'btn-danger' : 'btn-success'}" onclick="toggleWd(${id}, ${isWithdrawalEnabled ? 0 : 1})">
-                ${isWithdrawalEnabled ? 'Disable' : 'Enable'}
-              </button>
+              <button class="action-btn btn-success" onclick="toggleWd(${id}, 1)">Enable</button>
+              <button class="action-btn btn-danger" onclick="toggleWd(${id}, 0)">Disable</button>
             </td>
             <td>
               ${isDel ? 
@@ -707,7 +704,6 @@
         });
         const data = await res.json();
         showToast(data.message || 'Updated withdrawal status');
-        loadUsers(); // Refresh table view immediately to reflect new button state
       } catch (e) { alert('Error updating withdrawal permission.'); }
     }
 
