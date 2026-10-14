@@ -284,7 +284,7 @@
       <div class="form-row">
         <span class="form-label">Withdrawal<br>amount</span>
         <div class="form-input-wrapper">
-          <input type="number" id="withdraw-amount" class="form-input" placeholder="Min. withdrawal 20.00 GHS" oninput="updateCalculations()">
+          <input type="number" id="withdraw-amount" class="form-input" placeholder="Min. withdrawal 50.00 GHS" oninput="updateCalculations()">
         </div>
       </div>
 
@@ -540,8 +540,8 @@
       const amount = parseFloat(document.getElementById('withdraw-amount').value) || 0;
       const password = document.getElementById('fund-password').value.trim();
 
-      if (!amount || amount < 20) {
-        notifyUser("Minimum withdrawal amount is 20.00 GHS.", "warning");
+      if (!amount || amount < 50) {
+        notifyUser("Minimum withdrawal amount is 50.00 GHS.", "warning");
         return;
       }
 
