@@ -415,24 +415,24 @@
       const baseUrl = getApiBaseUrl();
 
       try {
-        // 2. Fetch user owned devices safely in background
-        const userRes = await fetch(`${baseUrl}/api/devices/my-devices`, {
-          headers: { 'Authorization': token ? `Bearer ${token}` : '' }
-        });
-        const userContentType = userRes.headers.get("content-type");
-        if (userRes.ok && userContentType && userContentType.includes("application/json")) {
+        // 2. Fetch user owned devices and live available devices simultaneously in parallel
+        const [userRes, allRes] = await Promise.all([
+          fetch(`${baseUrl}/api/devices/my-devices`, {
+            headers: { 'Authorization': token ? `Bearer ${token}` : '' }
+          }).catch(() => null),
+          fetch(`${baseUrl}/api/devices/list`, {
+            headers: { 'Authorization': token ? `Bearer ${token}` : '' }
+          }).catch(() => null)
+        ]);
+
+        if (userRes && userRes.ok) {
           const userData = await userRes.json();
           if (userData.success && Array.isArray(userData.data)) {
             ownedDeviceIds = userData.data.map(item => item.device_id);
           }
         }
 
-        // 3. Fetch live available devices from database if available
-        const allRes = await fetch(`${baseUrl}/api/devices/list`, {
-          headers: { 'Authorization': token ? `Bearer ${token}` : '' }
-        });
-        const allContentType = allRes.headers.get("content-type");
-        if (allRes.ok && allContentType && allContentType.includes("application/json")) {
+        if (allRes && allRes.ok) {
           const allData = await allRes.json();
           if (allData.success && Array.isArray(allData.data)) {
             let filteredDevices = allData.data.filter(device => device.id <= 12);
@@ -443,6 +443,8 @@
             });
             renderDevices(filteredDevices);
           }
+        } else {
+          renderDevices(fallbackList);
         }
       } catch (err) {
         console.warn('Background sync deferred, keeping instant UI configuration:', err);
