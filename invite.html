@@ -604,63 +604,45 @@
     }
 
     async function loadUserProfileAndTeam() {
-      let refCode = null;
+      let refCode = localStorage.getItem('referral_code') || localStorage.getItem('referralCode');
       const token = localStorage.getItem('token') || localStorage.getItem('userToken');
       const baseUrl = typeof API_BASE_URL !== 'undefined' ? API_BASE_URL : 'https://pep-back-production.up.railway.app';
 
-      // 1. Try fetching the real user profile from the backend database profile endpoint
+      // Instantly render with cached code if available for lightning-fast display
+      if (refCode) {
+        renderQRCodeAndLink(refCode);
+      }
+
+      // Fetch fresh profile and metrics simultaneously without blocking
       if (token) {
-        try {
-          const response = await fetch(`${baseUrl}/api/user/profile`, {
+        Promise.all([
+          fetch(`${baseUrl}/api/user/profile`, {
             headers: {
               'Content-Type': 'application/json',
               'Authorization': `Bearer ${token}`
             }
-          });
-          if (response.ok) {
-            const result = await response.json();
-            const user = result.data || result.user || result;
+          }).then(res => res.ok ? res.json() : null).catch(() => null),
+          
+          fetch(`${baseUrl}/api/team/report?startDate=${encodeURIComponent(document.getElementById('startDate').value)}&endDate=${encodeURIComponent(document.getElementById('endDate').value)}`, {
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+            }
+          }).then(res => res.ok ? res.json() : null).catch(() => null)
+        ]).then(([profileRes, teamRes]) => {
+          if (profileRes) {
+            const user = profileRes.data || profileRes.user || profileRes;
             refCode = user.referral_code || user.referralCode || user.code;
-            
-            // Save it to localStorage for future instant loading
             if (refCode) {
               localStorage.setItem('referral_code', refCode);
+              renderQRCodeAndLink(refCode);
             }
           }
-        } catch (err) {
-          console.warn("Could not fetch profile from backend, checking local storage.", err);
-        }
-      }
 
-      // 2. Fallback to localStorage if offline or fetch failed
-      if (!refCode) {
-        refCode = localStorage.getItem('referral_code') || localStorage.getItem('referralCode');
-      }
-
-      // 3. Final fallback placeholder
-      refCode = refCode || '------';
-
-      renderQRCodeAndLink(refCode);
-      fetchTeamMetrics();
-    }
-
-    function renderQRCodeAndLink(code) {
-      document.getElementById('displayRefCode').innerText = code;
-      const baseDomain = window.location.origin + window.location.pathname.replace('invite.html', 'auth.html');
-      const fullReferralUrl = `${baseDomain}?ref=${code}`;
-
-      document.getElementById('referralLink').value = fullReferralUrl;
-
-      const qrElem = document.getElementById("qrcode");
-      if (qrElem) {
-        qrElem.innerHTML = "";
-        new QRCode(qrElem, {
-          text: fullReferralUrl,
-          width: 140,
-          height: 140,
-          colorDark: "#000000",
-          colorLight: "#ffffff",
-          correctLevel: QRCode.CorrectLevel.H
+          if (teamRes && teamRes.success !== false) {
+            teamDataCache = teamRes;
+            populateMetrics(teamRes);
+          }
         });
       }
     }
@@ -757,6 +739,27 @@
       downloadLink.download = "invitation_qr_code.png";
       downloadLink.click();
       showToast('QR Code saved!', 'success');
+    }
+
+    function renderQRCodeAndLink(code) {
+      document.getElementById('displayRefCode').innerText = code;
+      const baseDomain = window.location.origin + window.location.pathname.replace('invite.html', 'auth.html');
+      const fullReferralUrl = `${baseDomain}?ref=${code}`;
+
+      document.getElementById('referralLink').value = fullReferralUrl;
+
+      const qrElem = document.getElementById("qrcode");
+      if (qrElem) {
+        qrElem.innerHTML = "";
+        new QRCode(qrElem, {
+          text: fullReferralUrl,
+          width: 140,
+          height: 140,
+          colorDark: "#000000",
+          colorLight: "#ffffff",
+          correctLevel: QRCode.CorrectLevel.H
+        });
+      }
     }
 
     window.addEventListener('DOMContentLoaded', () => {
