@@ -408,14 +408,10 @@
     }
 
     async function loadDevices() {
-      // 1. Render fallback list instantly so the page is never blank
-      renderDevices(fallbackList);
-
       const token = localStorage.getItem('userToken') || localStorage.getItem('token');
       const baseUrl = getApiBaseUrl();
 
       try {
-        // 2. Fetch user owned devices and live available devices simultaneously in parallel
         const [userRes, allRes] = await Promise.all([
           fetch(`${baseUrl}/api/devices/my-devices`, {
             headers: { 'Authorization': token ? `Bearer ${token}` : '' }
@@ -441,13 +437,12 @@
               if (device.id === 12) return { ...device, price: 500000, hourly_yield: 1302.08 };
               return device;
             });
+            localStorage.setItem('cached_devices', JSON.stringify(filteredDevices));
             renderDevices(filteredDevices);
           }
-        } else {
-          renderDevices(fallbackList);
         }
       } catch (err) {
-        console.warn('Background sync deferred, keeping instant UI configuration:', err);
+        console.warn('Background sync deferred:', err);
       }
     }
 
@@ -577,7 +572,16 @@
       }
     }
 
-    document.addEventListener('DOMContentLoaded', loadDevices);
+    // Instant render from local cache first, then fetch live data
+    document.addEventListener('DOMContentLoaded', () => {
+      const cachedDevices = localStorage.getItem('cached_devices');
+      if (cachedDevices) {
+        try { renderDevices(JSON.parse(cachedDevices)); } catch(e) { renderDevices(fallbackList); }
+      } else {
+        renderDevices(fallbackList);
+      }
+      loadDevices();
+    });
   </script>
   <!-- Floating Draggable WhatsApp Button -->
 <div id="whatsapp-float-btn" class="whatsapp-float">
