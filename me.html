@@ -534,7 +534,7 @@
       'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150'
     ];
 
-    document.addEventListener('DOMContentLoaded', () => {
+    window.addEventListener('pageshow', (event) => {
       const token = localStorage.getItem('userToken') || localStorage.getItem('token');
       
       if (!token) {

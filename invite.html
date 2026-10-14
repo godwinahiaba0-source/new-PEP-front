@@ -762,7 +762,7 @@
       }
     }
 
-    window.addEventListener('DOMContentLoaded', () => {
+    window.addEventListener('pageshow', (event) => {
       try {
         const userData = JSON.parse(localStorage.getItem('userData'));
         if (userData && (userData.createdAt || userData.registeredAt || userData.created_at)) {

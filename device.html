@@ -573,7 +573,7 @@
     }
 
     // Instant render from local cache first, then fetch live data
-    document.addEventListener('DOMContentLoaded', () => {
+    window.addEventListener('pageshow', (event) => {
       const cachedDevices = localStorage.getItem('cached_devices');
       if (cachedDevices) {
         try { renderDevices(JSON.parse(cachedDevices)); } catch(e) { renderDevices(fallbackList); }
