@@ -700,6 +700,42 @@
       }).join('');
     }
 
+    function renderUsers(users) {
+      const tbody = document.getElementById('usersTableBody');
+      if (!users.length) {
+        tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: #9ca3af;">No matching users found.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = users.map(u => {
+        const id = u.id || u.user_id;
+        const isDel = u.status === 'deleted' || u.is_deleted == 1;
+        // Use the inviter's phone number returned from the SQL self-join
+        const invitedBy = u.invited_by_phone || u.invited_by || 'Direct / None';
+
+        return `
+          <tr>
+            <td>#${id}</td>
+            <td><strong>${u.phone || u.phone_number || 'N/A'}</strong></td>
+            <td><span style="color:#38bdf8; font-weight:600;">${invitedBy}</span></td>
+            <td>${parseFloat(u.balance || 0).toFixed(2)} GHS</td>
+            <td>VIP ${u.vip_level || 0}</td>
+            <td><span class="badge ${isDel ? 'badge-deleted' : 'badge-approved'}">${isDel ? 'DELETED' : 'ACTIVE'}</span></td>
+            <td>
+              <button class="action-btn btn-success" onclick="toggleWd(${id}, 1)">Enable</button>
+              <button class="action-btn btn-danger" onclick="toggleWd(${id}, 0)">Disable</button>
+            </td>
+            <td>
+              ${isDel ? 
+                `<button class="action-btn btn btn-success" onclick="userAction(${id}, 'restore')">Restore</button>` : 
+                `<button class="action-btn btn-danger" onclick="userAction(${id}, 'delete')">Delete</button>`
+              }
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
     function renderReferrals(users) {
       const tbody = document.getElementById('referralsTableBody');
       if (!users.length) {
@@ -710,7 +746,7 @@
       tbody.innerHTML = users.map(u => {
         const id = u.id || u.user_id;
         const phone = u.phone || u.phone_number || 'N/A';
-        const invitedBy = u.invited_by || u.referrer_phone || u.inviter_phone || u.parent_phone || 'Direct / None';
+        const invitedBy = u.invited_by_phone || u.invited_by || 'Direct / None';
 
         return `
           <tr>
