@@ -691,8 +691,8 @@
       }
 
       const amount = parseFloat(amountInput);
-      if (isNaN(amount) || amount < 100) {
-        showToast('Minimum deposit amount is GHS 100.', 'error');
+      if (isNaN(amount) || amount < 50) {
+        showToast('Minimum deposit amount is GHS 50.', 'error');
         return;
       }
 
